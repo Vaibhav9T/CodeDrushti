@@ -5,6 +5,7 @@ module.exports.getReview = async (req, res) => {
     console.log('headers:', req.headers);
     console.log('body:', req.body);
 
+    
     let code = (req.body && req.body.code) || (req.query && req.query.code);
 
     // if body arrived as raw text, try to parse JSON or use it directly
@@ -24,7 +25,8 @@ module.exports.getReview = async (req, res) => {
 
     try {
         const response = await aiService.generateContent(code);
-        return res.status(200).json({ data: response });
+        // send raw markdown (not JSON) so clients can render it
+        return res.type('text/markdown').send(response);
     } catch (err) {
         console.error('ai.controller.getReview error:', err);
         return res.status(500).json({ error: 'Failed to generate content' });
