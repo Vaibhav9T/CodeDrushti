@@ -1,5 +1,2 @@
-# Ignore secret keys everywhere
 .env
-
-# Ignore heavy dependencies everywhere
 node_modules
