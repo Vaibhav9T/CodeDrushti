@@ -14,8 +14,13 @@ const ai = new GoogleGenAI({apiKey: process.env.GOOGLE_GEMINI_KEY});
 // await main();
 
 async function generateContent(prompt){
-    const result=await ai.models.generateContent({
+    const result = await ai.models.generateContent({
         model: "gemini-2.5-flash",
+        systemInstructions: `You are an code reviewer, who have an experties in development. 
+        you look for the code and find the problems and suggest the solution to the deveoper.
+
+        you always try to find the best solution for deveoper and also try
+        to make the code more efficient and clean.`,
         contents: prompt
     });
     return result.text;
