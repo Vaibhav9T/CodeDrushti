@@ -15,7 +15,7 @@ const ai = new GoogleGenAI({apiKey: process.env.GOOGLE_GEMINI_KEY});
 
 async function generateContent(code){
     const result = await ai.models.generateContent({
-        model: "gemini-2.0-flash",
+        model: "gemini-2.5-flash",
         systemInstructions: `Here’s a solid system instruction for your AI code reviewer:
 
                 AI System Instruction: Senior Code Reviewer (7+ Years of Experience)
