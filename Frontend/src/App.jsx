@@ -8,7 +8,7 @@ import "highlight.js/styles/github-dark.css";
 import axios from 'axios';
 import './App.css'
 
-
+<title>AI-Powered Code Review</title>
 function App() {
   const [count, setCount] = useState(0)
   const[code, setCode] = useState(`function sum(){ 
