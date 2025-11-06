@@ -3,6 +3,6 @@ const aiController=require('../controllers/ai.controller');
 
 const router= express.Router();
 
-router.post('/get-review', aiController.getReview);
+router.post('https://ai-powered-code-review-5fz0.onrender.com/get-review', aiController.getReview);
 
 module.exports = router;
