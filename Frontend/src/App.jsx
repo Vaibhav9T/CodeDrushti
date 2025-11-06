@@ -47,6 +47,7 @@ const [review, setReview] = useState(``)
               }}
             />
           </div>
+          <div onClick={() => setCode('')} className="clear">Clear</div>
           <div
             className="review"
             onClick={loading ? undefined : async () => {
