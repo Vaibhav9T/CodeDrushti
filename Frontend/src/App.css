@@ -35,7 +35,9 @@ main .left{
 .left .code, .code pre, .code  pre code {
   height: 100%;
   width: 100%;
-  padding: 1rem;
+  margin: 0;
+  border-radius: 0.7rem;
+  background-color: #000000;
   overflow-y: auto;
 }
 
@@ -54,4 +56,6 @@ main .left .review{
 
 main .right{
   background-color: #1E1E1E;
+  padding: 1rem 2rem;
+  overflow: auto;
 }
