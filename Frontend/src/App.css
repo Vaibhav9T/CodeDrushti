@@ -30,7 +30,9 @@ main .right{
 main .left{
   background-color: #000000;
   position: relative;
+  
 }
+
 
 .left .code, .code pre, .code  pre code {
   height: 100%;
@@ -38,8 +40,9 @@ main .left{
   margin: 0;
   border-radius: 0.7rem;
   background-color: #000000;
-  overflow-y: auto;
+  overflow: auto;
 }
+
 
 main .left .review{
   position: absolute;
