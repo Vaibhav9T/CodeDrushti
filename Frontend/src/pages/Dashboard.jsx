@@ -70,7 +70,7 @@ const Dashboard = () => {
 
       {/* INPUT AREA */}
       <div className="relative mb-8 group">
-        <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
+        <div className="absolute -inset-0.5 bg-linear-to-r from-cyan-500 to-blue-600 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
         <div className="relative bg-[#111a1f] rounded-2xl border border-gray-800 p-1">
           <textarea
             value={code}
@@ -93,7 +93,7 @@ const Dashboard = () => {
                 flex items-center px-6 py-2.5 rounded-lg font-bold text-white shadow-lg transition-all cursor-pointer
                 ${isLoading 
                   ? 'bg-gray-700 cursor-not-allowed' 
-                  : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:scale-105 hover:shadow-cyan-500/25 active:scale-95'
+                  : 'bg-linear-to-r from-cyan-500 to-blue-600 hover:scale-105 hover:shadow-cyan-500/25 active:scale-95'
                 }
               `}
             >
