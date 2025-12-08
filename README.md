@@ -1,6 +1,6 @@
-# AI_Powered_Code_Review
-**The AI powered code review use Gemini 2.0 model to review the code uploaded by user and give them suggestions.**
+# CodeDrushti
+**The newer version of AI-powered code review uses the Gemini 2.0 model to review the code uploaded by the user and give them suggestions.**
+* This version contains the best user interface with the best user experience.
 
-<img width="2824" height="1624" alt="image" src="https://github.com/user-attachments/assets/4d61dab0-118e-4915-b3da-36359d816447" />
+<img width="2826" height="1628" alt="image" src="https://github.com/user-attachments/assets/125d0bb1-60bf-4f2e-8846-0e9a1b591639" />
 
-<img width="2827" height="1636" alt="image" src="https://github.com/user-attachments/assets/3941cfae-e328-4635-aea5-1755a6f4d5a9" />
