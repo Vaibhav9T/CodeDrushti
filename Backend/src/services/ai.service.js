@@ -7,7 +7,7 @@ async function generateContent(code) {
     const genAI = new GoogleGenerativeAI(apiKey);
     
     // 'gemini-pro' is the safest bet for free tier
-    const model = genAI.getGenerativeModel({ model: "gemini-3-pro-preview" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const prompt = `
     Review this code and output ONLY valid JSON. 
