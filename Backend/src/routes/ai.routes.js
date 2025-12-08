@@ -1,8 +1,8 @@
-const express= require('express');
-const aiController=require('../controllers/ai.controller');
+const express = require('express');
+const router = express.Router();
+const aiController = require('../controllers/ai.controller');
 
-const router= express.Router();
-
-router.post('https://ai-powered-code-review-5fz0.onrender.com/get-review', aiController.getReview);
+// URL will be: http://localhost:5000/ai/get-review
+router.post('/get-review', aiController.getReview);
 
 module.exports = router;

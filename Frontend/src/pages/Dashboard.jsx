@@ -15,69 +15,47 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('bugs');
   const [analysisResult, setAnalysisResult] = useState(null);
 
-  // --- API INTEGRATION ---
+  // ---------------------------------------------------------------------------
+  // 🔴 STEP 1: PASTE YOUR RENDER BACKEND URL HERE
+  // Example: "https://my-app.onrender.com/ai/get-review"
+  // Do not keep the trailing slash at the root, but include the specific endpoint path.
+  const BACKEND_URL = "http://localhost:3000/ai/get-review"; 
+  // ---------------------------------------------------------------------------
+
   const handleAnalyze = async () => {
-    if (!code.trim()) return;
+    if (!code.trim()) {
+      alert("Please paste some code first!");
+      return;
+    }
     
     setIsLoading(true);
     setAnalysisResult(null); // Clear previous results
 
     try {
-      // 1. Send code to your Backend API
-      // Adjust 'http://localhost:5000/api/review' to match your actual backend URL
-      const response = await fetch('http://localhost:5000/api/review', {
+      const response = await fetch(BACKEND_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ code }),
+        // Ensure your backend expects "code" as the key. 
+        body: JSON.stringify({ code: code }),
       });
 
       if (!response.ok) {
-        throw new Error('Analysis failed');
+        throw new Error(`Server Error: ${response.status}`);
       }
 
       const data = await response.json();
+      
+      // If your backend returns the raw AI string instead of JSON, you might see an error.
+      // Ideally, your backend should return: { bugs: [], improvements: [], security: [] }
       setAnalysisResult(data);
 
     } catch (error) {
-      console.error("Backend error:", error);
-      
-      // --- FALLBACK MOCK DATA (For Demo Purposes) ---
-      // This ensures you see the UI design even if the backend is offline
-      setTimeout(() => {
-        setAnalysisResult({
-          bugs: [
-            {
-              title: "Potential Null Pointer Exception",
-              severity: "Critical",
-              description: "The 'user' object is not checked for null before access.",
-              line: "const userName = user.name;",
-              suggestion: "Add a null check: user && user.name"
-            }
-          ],
-          improvements: [
-            {
-              title: "Inefficient Loop",
-              severity: "Major",
-              description: "Using 'for...in' on arrays can be slower and iterate over properties.",
-              line: "for (const index in items) { ... }",
-              suggestion: "Use 'items.forEach()' or 'for...of' for better performance."
-            }
-          ],
-          security: [
-             {
-              title: "Weak Cryptography",
-              severity: "High",
-              description: "MD5 is insecure for password hashing.",
-              line: "const hash = crypto.createHash('md5').update(password)...",
-              suggestion: "Use bcrypt or Argon2 for password hashing."
-            }
-          ]
-        });
-      }, 2000); // Fake 2s delay
+      console.error("Analysis Failed:", error);
+      alert("Failed to connect to the backend. Check the console for details.");
     } finally {
-      setTimeout(() => setIsLoading(false), 2000); 
+      setIsLoading(false); 
     }
   };
 
@@ -92,7 +70,7 @@ const Dashboard = () => {
 
       {/* INPUT AREA */}
       <div className="relative mb-8 group">
-        <div className="absolute -inset-0.5 bg-linear-to-r from-cyan-500 to-blue-600 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
+        <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
         <div className="relative bg-[#111a1f] rounded-2xl border border-gray-800 p-1">
           <textarea
             value={code}
@@ -105,18 +83,17 @@ const Dashboard = () => {
           {/* ACTION BAR */}
           <div className="flex justify-between items-center px-4 py-3 bg-[#111a1f] rounded-b-xl border-t border-gray-800">
              <div className="flex space-x-4 text-xs text-gray-500">
-                <span className="flex items-center hover:text-cyan-400 cursor-pointer transition"><FileCode size={14} className="mr-1"/> JavaScript</span>
-                <span className="cursor-pointer hover:text-white transition">Auto-detect</span>
+                <span className="flex items-center hover:text-cyan-400 cursor-pointer transition"><FileCode size={14} className="mr-1"/> Auto-Detect Language</span>
              </div>
 
              <button 
               onClick={handleAnalyze}
               disabled={isLoading || !code}
               className={`
-                flex items-center px-6 py-2.5 rounded-lg font-bold text-white shadow-lg transition-all
+                flex items-center px-6 py-2.5 rounded-lg font-bold text-white shadow-lg transition-all cursor-pointer
                 ${isLoading 
                   ? 'bg-gray-700 cursor-not-allowed' 
-                  : 'bg-linear-to-r from-cyan-500 to-blue-600 hover:scale-105 hover:shadow-cyan-500/25 active:scale-95'
+                  : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:scale-105 hover:shadow-cyan-500/25 active:scale-95'
                 }
               `}
             >
@@ -136,7 +113,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* RESULTS SECTION (Only shows if result exists) */}
+      {/* RESULTS SECTION */}
       {analysisResult && (
         <div className="animate-fade-in-up">
           <h2 className="text-2xl font-bold text-white mb-6">Analysis Results</h2>
@@ -148,7 +125,7 @@ const Dashboard = () => {
             <TabButton label="Security" count={analysisResult.security?.length} active={activeTab === 'security'} onClick={() => setActiveTab('security')} />
           </div>
 
-          {/* CARDS */}
+          {/* CARDS LIST */}
           <div className="space-y-4">
              {analysisResult[activeTab]?.length > 0 ? (
                analysisResult[activeTab].map((item, index) => (
@@ -172,7 +149,7 @@ const Dashboard = () => {
 const TabButton = ({ label, count, active, onClick }) => (
   <button 
     onClick={onClick}
-    className={`pb-3 text-sm font-medium transition-colors relative ${active ? 'text-cyan-400' : 'text-gray-500 hover:text-gray-300'}`}
+    className={`pb-3 text-sm font-medium transition-colors relative cursor-pointer ${active ? 'text-cyan-400' : 'text-gray-500 hover:text-gray-300'}`}
   >
     {label}
     {count > 0 && <span className="ml-2 bg-gray-800 text-xs px-2 py-0.5 rounded-full text-gray-300">{count}</span>}
@@ -181,7 +158,6 @@ const TabButton = ({ label, count, active, onClick }) => (
 );
 
 const ResultCard = ({ item, type }) => {
-  // Determine Badge Color
   const getSeverityColor = (severity) => {
     switch(severity?.toLowerCase()) {
       case 'critical': return 'bg-red-500/10 text-red-400 border-red-500/20';
@@ -202,15 +178,17 @@ const ResultCard = ({ item, type }) => {
       <div className="flex justify-between items-start mb-3">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-gray-900 rounded-lg">{getIcon()}</div>
-          <h3 className="font-bold text-lg text-gray-200">{item.title}</h3>
+          <h3 className="font-bold text-lg text-gray-200">{item.title || "Issue Detected"}</h3>
         </div>
-        <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getSeverityColor(item.severity)}`}>
-          {item.severity}
-        </span>
+        {item.severity && (
+          <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getSeverityColor(item.severity)}`}>
+            {item.severity}
+          </span>
+        )}
       </div>
 
       <p className="text-gray-400 text-sm mb-4 leading-relaxed pl-[52px]">
-        {item.description}
+        {item.description || item.message}
       </p>
 
       {item.line && (
