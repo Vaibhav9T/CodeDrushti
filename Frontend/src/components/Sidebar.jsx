@@ -4,9 +4,12 @@ import {
   LayoutDashboard, History, PlusCircle, User, Settings, LogOut, BookOpen, LogIn, LayoutGrid 
 } from 'lucide-react';
 
+import {useNavigate} from 'react-router-dom';
+
 const Sidebar = ({ isAuthenticated }) => {
   const location = useLocation();
   const isActive = (path) => location.pathname === path;
+  const navigate = useNavigate();
 
   const authMenuItems = [
     { name: 'Dashboard', icon: LayoutGrid, path: '/dashboard' },
@@ -21,6 +24,11 @@ const Sidebar = ({ isAuthenticated }) => {
     { name: 'Documentation', icon: BookOpen, path: '/docs' },
   ];
 
+  const handleLogout = () => {
+    isAuthenticated=false;
+    navigate('/login');
+  };
+  
   return (
     <div className="fixed top-0 left-0 h-screen w-64 bg-[#0d1317] border-r border-gray-800 flex flex-col justify-between p-6 z-50">
       <div>
@@ -59,7 +67,7 @@ const Sidebar = ({ isAuthenticated }) => {
 
       <div className="space-y-4">
         {isAuthenticated ? (
-          <button className="w-full flex items-center space-x-3 px-4 py-3 text-gray-400 hover:text-red-400 hover:bg-red-900/10 rounded-lg transition-colors">
+          <button className="w-full flex items-center space-x-3 px-4 py-3 text-gray-400 hover:text-red-400 hover:bg-red-900/10 rounded-lg transition-colors " onClick={handleLogout} >
             <LogOut size={20} />
             <span>Logout</span>
           </button>
@@ -67,7 +75,7 @@ const Sidebar = ({ isAuthenticated }) => {
           <>
             <Link to="/register">
               <button className="w-full bg-cyan-400 hover:bg-cyan-300 text-black font-bold py-3 rounded-lg transition-all shadow-[0_0_15px_rgba(34,211,238,0.2)] cursor-pointer">
-                Sign Up
+                Register
               </button>
             </Link>
             <Link to="/login" className="flex items-center justify-center space-x-2 text-gray-300 hover:text-white transition-colors py-2">
