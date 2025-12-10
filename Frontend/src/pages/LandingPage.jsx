@@ -1,7 +1,17 @@
 import React from 'react';
 import { Search, ShieldCheck, Wand2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function LandingPage() {
+  const navigate = useNavigate();
+
+  const handleLogin = () => {
+    navigate('/login');
+  }
+
+  const handleGetStarted = () => {
+    navigate('/register');
+  }
   return (
     <div className="px-12 py-20 max-w-6xl mx-auto">
       <div className="bg-[#111a1f] rounded-3xl p-16 border border-gray-800 relative overflow-hidden shadow-2xl">
@@ -17,10 +27,10 @@ export default function LandingPage() {
           </p>
           
           <div className="flex space-x-4">
-            <button className="bg-cyan-400 hover:bg-cyan-300 text-black font-bold px-8 py-3 rounded-lg transition-all shadow-[0_0_20px_rgba(34,211,238,0.3)] cursor-pointer">
+            <button className="bg-cyan-400 hover:bg-cyan-300 text-black font-bold px-8 py-3 rounded-lg transition-all shadow-[0_0_20px_rgba(34,211,238,0.3)] cursor-pointer" onClick={handleGetStarted}>
               Get Started
             </button>
-            <button className="bg-[#1c2b33] hover:bg-[#253842] text-white font-medium px-8 py-3 rounded-lg border border-gray-700 transition-all cursor-pointer">
+            <button className="bg-[#1c2b33] hover:bg-[#253842] text-white font-medium px-8 py-3 rounded-lg border border-gray-700 transition-all cursor-pointer" onClick={handleLogin}>
               Login
             </button>
           </div>

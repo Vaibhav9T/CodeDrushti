@@ -11,11 +11,6 @@ const Sidebar = ({ isAuthenticated }) => {
   const isActive = (path) => location.pathname === path;
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-
-    navigate('/login');
-  }
-
   const authMenuItems = [
     { name: 'Dashboard', icon: LayoutGrid, path: '/dashboard' },
     { name: 'My Reviews', icon: History, path: '/reviews' },
@@ -29,6 +24,11 @@ const Sidebar = ({ isAuthenticated }) => {
     { name: 'Documentation', icon: BookOpen, path: '/docs' },
   ];
 
+  const handleLogout = () => {
+    isAuthenticated=false;
+    navigate('/login');
+  };
+  
   return (
     <div className="fixed top-0 left-0 h-screen w-64 bg-[#0d1317] border-r border-gray-800 flex flex-col justify-between p-6 z-50">
       <div>
@@ -75,7 +75,7 @@ const Sidebar = ({ isAuthenticated }) => {
           <>
             <Link to="/register">
               <button className="w-full bg-cyan-400 hover:bg-cyan-300 text-black font-bold py-3 rounded-lg transition-all shadow-[0_0_15px_rgba(34,211,238,0.2)] cursor-pointer">
-                Sign Up
+                Register
               </button>
             </Link>
             <Link to="/login" className="flex items-center justify-center space-x-2 text-gray-300 hover:text-white transition-colors py-2">

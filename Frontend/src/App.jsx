@@ -4,6 +4,7 @@ import Sidebar from './components/Sidebar';
 import LandingPage from './pages/LandingPage';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login.jsx';
+import Register from './pages/Register.jsx'
 
 // Helper component to handle sidebar state based on URL
 function AppContent() {
@@ -37,6 +38,7 @@ function AppContent() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/docs" element={<div className="text-white p-10">Docs Coming Soon</div>} />
           <Route path="/login" element={<Login />} />
+          <Route path='/Register' element={<Register/>}/>
         </Routes>
       </main>
     </div>

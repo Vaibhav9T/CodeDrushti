@@ -20,7 +20,7 @@ const Login = () => {
     if (formData.username=='vaibhavtembukadea09@gmail.com' && formData.password=='Vaibhav@123') {
      navigate('/dashboard');
     } else {
-      alert('Please fill in all fields.');
+      alert('Wrong Credentials');
     }
   };
 
@@ -105,8 +105,8 @@ const Login = () => {
         {/* Footer / Sign Up */}
         <div className="mt-6 text-center text-sm text-gray-400">
           Don't have an account?{' '}
-          <Link to="/signup" className="text-cyan-500 hover:text-cyan-400 font-medium transition-colors">
-            Sign Up
+          <Link to="/Register" className="text-cyan-500 hover:text-cyan-400 font-medium transition-colors">
+           Register
           </Link>
         </div>
 
