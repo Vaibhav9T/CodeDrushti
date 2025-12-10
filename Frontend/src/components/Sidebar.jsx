@@ -4,9 +4,17 @@ import {
   LayoutDashboard, History, PlusCircle, User, Settings, LogOut, BookOpen, LogIn, LayoutGrid 
 } from 'lucide-react';
 
+import {useNavigate} from 'react-router-dom';
+
 const Sidebar = ({ isAuthenticated }) => {
   const location = useLocation();
   const isActive = (path) => location.pathname === path;
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+
+    navigate('/login');
+  }
 
   const authMenuItems = [
     { name: 'Dashboard', icon: LayoutGrid, path: '/dashboard' },
@@ -59,7 +67,7 @@ const Sidebar = ({ isAuthenticated }) => {
 
       <div className="space-y-4">
         {isAuthenticated ? (
-          <button className="w-full flex items-center space-x-3 px-4 py-3 text-gray-400 hover:text-red-400 hover:bg-red-900/10 rounded-lg transition-colors">
+          <button className="w-full flex items-center space-x-3 px-4 py-3 text-gray-400 hover:text-red-400 hover:bg-red-900/10 rounded-lg transition-colors " onClick={handleLogout} >
             <LogOut size={20} />
             <span>Logout</span>
           </button>

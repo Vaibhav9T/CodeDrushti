@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import Sidebar from './components/Sidebar';
 import LandingPage from './pages/LandingPage';
 import Dashboard from './pages/Dashboard';
+import Login from './pages/Login.jsx';
 
 // Helper component to handle sidebar state based on URL
 function AppContent() {
@@ -35,6 +36,7 @@ function AppContent() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/docs" element={<div className="text-white p-10">Docs Coming Soon</div>} />
+          <Route path="/login" element={<Login />} />
         </Routes>
       </main>
     </div>
