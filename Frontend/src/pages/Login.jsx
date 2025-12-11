@@ -19,6 +19,7 @@ const Login = () => {
     console.log('Login logic here:', formData);
     if (formData.username=='vaibhavtembukadea09@gmail.com' && formData.password=='Vaibhav@123') {
      navigate('/dashboard');
+     isAuthenticated=true;
     } else {
       alert('Wrong Credentials');
     }
@@ -96,7 +97,7 @@ const Login = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold py-3.5 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-cyan-500/20"
+            className="w-full bg-linear-to-r from-cyan-500 to-blue-600 text-white font-bold py-3.5 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-cyan-500/20"
           >
             Login
           </button>
