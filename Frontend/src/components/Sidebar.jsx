@@ -25,8 +25,8 @@ const Sidebar = ({ isAuthenticated }) => {
   ];
 
   const handleLogout = () => {
-    isAuthenticated=false;
     navigate('/login');
+     return(window.location.reload());
   };
   
   return (
