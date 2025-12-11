@@ -19,7 +19,7 @@ const Dashboard = () => {
   // 🔴 STEP 1: PASTE YOUR RENDER BACKEND URL HERE
   // Example: "https://my-app.onrender.com/ai/get-review"
   // Do not keep the trailing slash at the root, but include the specific endpoint path.
-  const BACKEND_URL = "http://localhost:3000/ai/get-review"; 
+  const BACKEND_URL = "https://codedrushti.onrender.com/ai/get-review"; 
   // ---------------------------------------------------------------------------
 
   const handleAnalyze = async () => {
