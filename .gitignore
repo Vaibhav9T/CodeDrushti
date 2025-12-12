@@ -2,3 +2,4 @@
 node_modules
 /temp.js
 /temp.md
+.env.local
