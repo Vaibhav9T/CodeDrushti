@@ -8,6 +8,7 @@ import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import { SidebarProvider } from './contexts/SidebarContext';
 import { useSidebar } from './contexts/SidebarContext';
+import Documentation from './pages/Documentation';
 
 function AppContent() {
   const { isCollapsed, isMobile } = useSidebar();
@@ -21,7 +22,7 @@ function AppContent() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path='/register' element={<Register/>}/>
-          <Route path="/docs" element={<div className="text-white p-10">Docs Coming Soon</div>} />
+          <Route path="/docs" element={<Documentation/>} />
           
           {/* Protected Routes */}
           <Route path="/dashboard" element={
