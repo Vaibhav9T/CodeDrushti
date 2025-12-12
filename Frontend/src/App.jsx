@@ -10,9 +10,9 @@ import Register from './pages/Register.jsx';
 function AppContent() {
   return (
     <div className="flex min-h-screen bg-[#0d1317]">
-      <Sidebar />
-
-      <main className="flex-1 ml-64 relative">
+      <Sidebar className="flex-0"/>
+    
+      <main className="flex-1 ml-0 md:ml-64 transition-all duration-300 ">
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
