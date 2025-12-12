@@ -2,6 +2,11 @@ import React, { useState } from 'react';
 import { User, Lock, Eye, EyeOff } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { 
+  signInWithEmailAndPassword, 
+  signInWithPopup 
+} from 'firebase/auth';
+import { auth, googleProvider } from '../config/firebase';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -9,30 +14,90 @@ const Login = () => {
     password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError(''); // Clear error when user types
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Login logic here:', formData);
+    setError('');
+    setLoading(true);
     
-    // Replace this with actual API call
-    if (formData.username === 'vaibhavtembukadea09@gmail.com' && formData.password === 'Vaibhav@123') {
-      // Call login with token and user data
-      const token = 'your-jwt-token'; // Replace with actual token from API
-      const userData = {
-        email: formData.username,
-        name: 'Vaibhav' // Replace with actual user data from API
-      };
+    try {
+      // Sign in with Firebase Authentication using email and password
+      const userCredential = await signInWithEmailAndPassword(
+        auth, 
+        formData.username, 
+        formData.password
+      );
       
-      login(token, userData);
+      // Call login with Firebase user data
+      login(userCredential.user);
       navigate('/dashboard');
-    } else {
-      alert('Wrong Credentials');
+    } catch (error) {
+      console.error('Login error:', error);
+      
+      // Provide user-friendly error messages
+      switch (error.code) {
+        case 'auth/invalid-email':
+          setError('Invalid email address format.');
+          break;
+        case 'auth/user-disabled':
+          setError('This account has been disabled.');
+          break;
+        case 'auth/user-not-found':
+          setError('No account found with this email.');
+          break;
+        case 'auth/wrong-password':
+          setError('Incorrect password.');
+          break;
+        case 'auth/invalid-credential':
+          setError('Invalid email or password.');
+          break;
+        default:
+          setError('Failed to sign in. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setError('');
+    setLoading(true);
+    
+    try {
+      // Sign in with Google using Firebase Authentication
+      const result = await signInWithPopup(auth, googleProvider);
+      
+      // Call login with Firebase user data
+      login(result.user);
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Google sign-in error:', error);
+      
+      // Provide user-friendly error messages
+      switch (error.code) {
+        case 'auth/popup-closed-by-user':
+          setError('Sign-in popup was closed. Please try again.');
+          break;
+        case 'auth/cancelled-popup-request':
+          setError('Sign-in was cancelled.');
+          break;
+        case 'auth/popup-blocked':
+          setError('Sign-in popup was blocked by the browser.');
+          break;
+        default:
+          setError('Failed to sign in with Google. Please try again.');
+      }
+    } finally {
+      setLoading(false);
     }
   };
   return (
@@ -51,6 +116,13 @@ const Login = () => {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
+          
+          {/* Error Message */}
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/50 text-red-500 rounded-xl px-4 py-3 text-sm">
+              {error}
+            </div>
+          )}
           
           {/* Username/Email Field */}
           <div className="space-y-2">
@@ -106,9 +178,10 @@ const Login = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full bg-linear-to-r from-cyan-500 to-blue-600 text-white font-bold py-3.5 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-cyan-500/20"
+            disabled={loading}
+            className="w-full bg-linear-to-r from-cyan-500 to-blue-600 text-white font-bold py-3.5 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Login
+            {loading ? 'Signing in...' : 'Login'}
           </button>
         </form>
 
@@ -133,7 +206,12 @@ const Login = () => {
         {/* Social Login Buttons */}
         <div className="flex justify-center gap-4">
           {/* Google Button */}
-          <button className="p-3 bg-[#0d1117] border border-gray-700 rounded-full hover:bg-gray-800 hover:border-gray-600 transition-all group">
+          <button 
+            type="button"
+            onClick={handleGoogleSignIn}
+            disabled={loading}
+            className="p-3 bg-[#0d1117] border border-gray-700 rounded-full hover:bg-gray-800 hover:border-gray-600 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
+          >
             <svg className="w-6 h-6" viewBox="0 0 24 24">
               <path
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"

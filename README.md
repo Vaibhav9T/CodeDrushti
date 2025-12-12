@@ -11,6 +11,7 @@ CodeDrushti is a MERN‑stack web application that helps developers review code 
 ## Features
 
 - AI code analysis: Send code to the backend and receive insights.
+- Firebase Authentication: Secure user authentication with email/password and Google Sign-In.
 - Modular backend: `controllers`, `routes`, `services` for clean separation.
 - React (Vite) SPA: Pages for Landing, Login, Register, Dashboard.
 - Reusable UI components: `Sidebar` for navigation/layout.
@@ -20,6 +21,7 @@ CodeDrushti is a MERN‑stack web application that helps developers review code 
 
 - Backend: Node.js, Express
 - Frontend: React, Vite
+- Authentication: Firebase Authentication
 - Tooling: ESLint (frontend)
 - AI Provider: Pluggable via `ai.service.js` (e.g., OpenAI/Gemini or similar)
 
@@ -224,6 +226,7 @@ Frontend `package.json` includes:
 
 ## Development Notes
 
+- **Authentication**: This app uses Firebase Authentication. See [`Frontend/FIREBASE_SETUP.md`](Frontend/FIREBASE_SETUP.md) for complete setup instructions.
 - Lint the frontend code: `cd Frontend && npm run lint` (if configured via `eslint.config.js`).
 - Keep services pure and controllers thin to isolate business logic.
 - Add tests as needed (Jest/Vitest are good fits, not yet configured in repo).
@@ -235,12 +238,14 @@ Frontend `package.json` includes:
 - Backend can be deployed to platforms like Render, Railway, or any Node hosting.
 - Frontend can be deployed to Netlify/Vercel or served by the backend after `npm run build`.
 - Set environment variables securely in your hosting provider.
+- **Important**: Configure Firebase Authentication authorized domains for production deployments in Firebase Console.
 
 ## Troubleshooting
 
 - Port conflicts: change `PORT` or Vite port via `vite.config.js`.
 - CORS issues: configure CORS in `Backend/src/app.js` (e.g., `cors()` middleware).
 - Missing `AI_API_KEY`: ensure your `.env` is loaded; restart dev servers.
+- Firebase authentication issues: See [`Frontend/FIREBASE_SETUP.md`](Frontend/FIREBASE_SETUP.md) troubleshooting section.
 
 
 

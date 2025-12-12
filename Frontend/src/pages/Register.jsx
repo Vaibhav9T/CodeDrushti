@@ -2,6 +2,13 @@ import { useState } from "react";
 import {User, Eye, EyeOff, Lock, Form, CheckIcon} from 'lucide-react';
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from '../contexts/AuthContext';
+import { 
+  createUserWithEmailAndPassword, 
+  updateProfile,
+  signInWithPopup 
+} from 'firebase/auth';
+import { auth, googleProvider } from '../config/firebase';
 
 const Register=()=>{
     const [formData, setFormData] = useState({
@@ -11,22 +18,108 @@ const Register=()=>{
       });
 
       const [showPassword, setShowPassword] = useState(false);
+      const [error, setError] = useState('');
+      const [loading, setLoading] = useState(false);
+      const [agreedToTerms, setAgreedToTerms] = useState(false);
+      const navigate = useNavigate();
+      const { login } = useAuth();
 
       const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError(''); // Clear error when user types
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Login logic here:', formData);
-    if (formData.username=='vaibhavtembukadea09@gmail.com' && formData.password=='Vaibhav@123') {
-     navigate('/dashboard');
-    } else {
-      alert('Please fill in all fields.');
+    setError('');
+    
+    // Validate terms agreement
+    if (!agreedToTerms) {
+      setError('Please agree to the terms and conditions.');
+      return;
+    }
+    
+    // Validate password strength
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      return;
+    }
+    
+    setLoading(true);
+    
+    try {
+      // Create user with Firebase Authentication
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        formData.email,
+        formData.password
+      );
+      
+      // Update user profile with display name
+      await updateProfile(userCredential.user, {
+        displayName: formData.username
+      });
+      
+      // Call login with Firebase user data
+      login(userCredential.user);
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Registration error:', error);
+      
+      // Provide user-friendly error messages
+      switch (error.code) {
+        case 'auth/email-already-in-use':
+          setError('An account with this email already exists.');
+          break;
+        case 'auth/invalid-email':
+          setError('Invalid email address format.');
+          break;
+        case 'auth/weak-password':
+          setError('Password is too weak. Please use a stronger password.');
+          break;
+        case 'auth/operation-not-allowed':
+          setError('Email/password accounts are not enabled.');
+          break;
+        default:
+          setError('Failed to create account. Please try again.');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
-   const navigate = useNavigate();
+  const handleGoogleSignIn = async () => {
+    setError('');
+    setLoading(true);
+    
+    try {
+      // Sign in with Google using Firebase Authentication
+      const result = await signInWithPopup(auth, googleProvider);
+      
+      // Call login with Firebase user data
+      login(result.user);
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Google sign-in error:', error);
+      
+      // Provide user-friendly error messages
+      switch (error.code) {
+        case 'auth/popup-closed-by-user':
+          setError('Sign-in popup was closed. Please try again.');
+          break;
+        case 'auth/cancelled-popup-request':
+          setError('Sign-in was cancelled.');
+          break;
+        case 'auth/popup-blocked':
+          setError('Sign-in popup was blocked by the browser.');
+          break;
+        default:
+          setError('Failed to sign in with Google. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
    return(
 
@@ -43,6 +136,13 @@ const Register=()=>{
                 {/* Register form*/ }
                 {/* Form */}
                         <form onSubmit={handleSubmit} className="space-y-6">
+                          
+                          {/* Error Message */}
+                          {error && (
+                            <div className="bg-red-500/10 border border-red-500/50 text-red-500 rounded-xl px-4 py-3 text-sm">
+                              {error}
+                            </div>
+                          )}
                           
                           {/* Username/Email Field */}
                           <div className="space-y-2">
@@ -108,16 +208,23 @@ const Register=()=>{
                 
                           {/* Forgot Password Link */}
                           <div className="flex justify-center items-center space-x-2">
-                            <input type="checkbox" id="terms" className="w-4 h-4 bg-[#0d1117] border border-gray-700 rounded-sm focus:ring-2 focus:ring-cyan-500 cursor-pointer"/>
+                            <input 
+                              type="checkbox" 
+                              id="terms" 
+                              checked={agreedToTerms}
+                              onChange={(e) => setAgreedToTerms(e.target.checked)}
+                              className="w-4 h-4 bg-[#0d1117] border border-gray-700 rounded-sm focus:ring-2 focus:ring-cyan-500 cursor-pointer"
+                            />
                            <p className="text-sm text-gray-500">I agree to the terms and conditions</p>
                           </div>
                 
                           {/* Submit Button */}
                           <button
                             type="submit"
-                            className="w-full bg-linear-to-r from-cyan-500 to-blue-600 text-white font-bold py-3.5 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-cyan-500/20"
+                            disabled={loading}
+                            className="w-full bg-linear-to-r from-cyan-500 to-blue-600 text-white font-bold py-3.5 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                           Register
+                           {loading ? 'Creating account...' : 'Register'}
                           </button>
                         </form>
                 
@@ -143,7 +250,12 @@ const Register=()=>{
                                 {/* Social Login Buttons */}
                     <div className="flex justify-center gap-4">
                     {/* Google Button */}
-                    <button className="p-3 bg-[#0d1117] border border-gray-700 rounded-full hover:bg-gray-800 hover:border-gray-600 transition-all group">
+                    <button 
+                      type="button"
+                      onClick={handleGoogleSignIn}
+                      disabled={loading}
+                      className="p-3 bg-[#0d1117] border border-gray-700 rounded-full hover:bg-gray-800 hover:border-gray-600 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
                         <svg className="w-6 h-6" viewBox="0 0 24 24">
                         <path
                             d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
