@@ -78,13 +78,13 @@ const Sidebar = () => {
       {/* Mobile Menu Button - Fixed at top left */}
      { isCollapsed ? (<button
         onClick={toggleSidebar}
-        className="md:hidden fixed top-4 left-4 z-[60] bg-[#0d1317] border border-gray-800 p-2 rounded-lg text-cyan-400 hover:bg-gray-800 transition-all duration-300 ease-in-out"
+        className="md:hidden fixed top-4 left-4 z-60 bg-[#0d1317] border border-gray-800 p-2 rounded-lg text-cyan-400 hover:bg-gray-800 transition-all duration-300 ease-in-out"
       >
         {isCollapsed ? <Menu size={24} /> : <X size={24} />}
       </button>):(
         <button
         onClick={toggleSidebar}
-        className="md:hidden fixed top-4 left-50 z-[60] bg-[#0d1317] border border-gray-800 p-2 rounded-lg text-cyan-400 hover:bg-gray-800 transition-all duration-300 ease-in-out"
+        className="md:hidden fixed top-4 left-50 z-60 bg-[#0d1317] border border-gray-800 p-2 rounded-lg text-cyan-400 hover:bg-gray-800 transition-all duration-300 ease-in-out"
       >
         {isCollapsed ? <Menu size={24} /> : <X size={24} />}
       </button>
@@ -224,7 +224,7 @@ const Sidebar = () => {
       {/* Desktop Toggle Button - Attached to sidebar */}
       <button
         onClick={toggleSidebar}
-        className={`hidden md:block fixed top-6 z-[60] bg-[#0d1317] border border-gray-800 p-2 rounded-r-lg text-cyan-400 hover:bg-gray-800 transition-all duration-300
+        className={`hidden md:block fixed top-6 z-60 bg-[#0d1317] border border-gray-800 p-2 rounded-r-lg text-cyan-400 hover:bg-gray-800 transition-all duration-300
           ${isCollapsed ? 'left-20' : 'left-64'}
         `}
       >
