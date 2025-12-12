@@ -40,8 +40,19 @@ const Register=()=>{
     }
     
     // Validate password strength
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long.');
+    if (formData.password.length < 8) {
+      setError('Password must be at least 8 characters long.');
+      return;
+    }
+    
+    // Check for password complexity
+    const hasUpperCase = /[A-Z]/.test(formData.password);
+    const hasLowerCase = /[a-z]/.test(formData.password);
+    const hasNumber = /[0-9]/.test(formData.password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(formData.password);
+    
+    if (!hasUpperCase || !hasLowerCase || !hasNumber) {
+      setError('Password must contain at least one uppercase letter, one lowercase letter, and one number.');
       return;
     }
     
@@ -139,7 +150,11 @@ const Register=()=>{
                           
                           {/* Error Message */}
                           {error && (
-                            <div className="bg-red-500/10 border border-red-500/50 text-red-500 rounded-xl px-4 py-3 text-sm">
+                            <div 
+                              role="alert" 
+                              aria-live="polite"
+                              className="bg-red-500/10 border border-red-500/50 text-red-500 rounded-xl px-4 py-3 text-sm"
+                            >
                               {error}
                             </div>
                           )}
@@ -204,6 +219,9 @@ const Register=()=>{
                                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Lock className="w-5 h-5" />}
                               </button>
                             </div>
+                            <p className="text-xs text-gray-500 mt-1">
+                              Must be at least 8 characters with uppercase, lowercase, and a number
+                            </p>
                           </div>
                 
                           {/* Forgot Password Link */}
