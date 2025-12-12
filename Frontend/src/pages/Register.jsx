@@ -49,7 +49,6 @@ const Register=()=>{
     const hasUpperCase = /[A-Z]/.test(formData.password);
     const hasLowerCase = /[a-z]/.test(formData.password);
     const hasNumber = /[0-9]/.test(formData.password);
-    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(formData.password);
     
     if (!hasUpperCase || !hasLowerCase || !hasNumber) {
       setError('Password must contain at least one uppercase letter, one lowercase letter, and one number.');
