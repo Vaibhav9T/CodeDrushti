@@ -1,49 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, History, PlusCircle, User, Settings, LogOut, BookOpen, LogIn, LayoutGrid, Menu, X, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useSidebar } from '../contexts/SidebarContext';
 
 const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated, logout } = useAuth();
-  
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-
-  // Detect mobile screen size
-  useEffect(() => {
-    const checkMobile = () => {
-      const mobile = window.innerWidth < 768;
-      setIsMobile(mobile);
-      if (mobile) {
-        setIsCollapsed(true); // Auto-collapse on mobile
-      }
-    };
-
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  const { isCollapsed, isMobile, toggleSidebar } = useSidebar();
 
   // Close sidebar on route change (mobile only)
   useEffect(() => {
-    if (isMobile) {
-      setIsCollapsed(true);
+    if (isMobile && !isCollapsed) {
+      toggleSidebar(true);
     }
-  }, [location.pathname, isMobile]);
-
-  // Load saved collapse state for desktop
-  useEffect(() => {
-    if (!isMobile) {
-      const savedState = localStorage.getItem('sidebarCollapsed');
-      if (savedState !== null) {
-        setIsCollapsed(JSON.parse(savedState));
-      }
-    }
-  }, [isMobile]);
+  }, [location.pathname]);
 
   const isActive = (path) => location.pathname === path;
 
@@ -65,25 +39,21 @@ const Sidebar = () => {
     navigate('/login');
   };
 
-  const toggleSidebar = () => {
-    const newState = !isCollapsed;
-    setIsCollapsed(newState);
-    if (!isMobile) {
-      localStorage.setItem('sidebarCollapsed', JSON.stringify(newState));
-    }
+  const toggleSidebarFunc = () => {
+    toggleSidebar(!isCollapsed);
   };
   
   return (
     <>
       {/* Mobile Menu Button - Fixed at top left */}
      { isCollapsed ? (<button
-        onClick={toggleSidebar}
+        onClick={toggleSidebarFunc}
         className="md:hidden fixed top-4 left-4 z-60 bg-[#0d1317] border border-gray-800 p-2 rounded-lg text-cyan-400 hover:bg-gray-800 transition-all duration-300 ease-in-out"
       >
         {isCollapsed ? <Menu size={24} /> : <X size={24} />}
       </button>):(
         <button
-        onClick={toggleSidebar}
+        onClick={toggleSidebarFunc}
         className="md:hidden fixed top-4 left-50 z-60 bg-[#0d1317] border border-gray-800 p-2 rounded-lg text-cyan-400 hover:bg-gray-800 transition-all duration-300 ease-in-out"
       >
         {isCollapsed ? <Menu size={24} /> : <X size={24} />}
@@ -95,7 +65,7 @@ const Sidebar = () => {
       {!isCollapsed && isMobile && (
         <div 
           className="fixed inset-0 bg-black/50 z-40 md:hidden"
-          onClick={() => setIsCollapsed(true)}
+          onClick={() => toggleSidebar(true)}
         />
         
       )}
@@ -223,7 +193,7 @@ const Sidebar = () => {
 
       {/* Desktop Toggle Button - Attached to sidebar */}
       <button
-        onClick={toggleSidebar}
+        onClick={toggleSidebarFunc}
         className={`hidden md:block fixed top-6 z-60 bg-[#0d1317] border border-gray-800 p-2 rounded-r-lg text-cyan-400 hover:bg-gray-800 transition-all duration-300
           ${isCollapsed ? 'left-20' : 'left-64'}
         `}

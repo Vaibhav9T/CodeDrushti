@@ -6,13 +6,17 @@ import LandingPage from './pages/LandingPage';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
+import { SidebarProvider } from './contexts/SidebarContext';
+import { useSidebar } from './contexts/SidebarContext';
 
 function AppContent() {
+  const { isCollapsed, isMobile } = useSidebar();
+
   return (
     <div className="flex min-h-screen bg-[#0d1317]">
       <Sidebar className="flex-0"/>
     
-      <main className="flex-1 ml-0 md:ml-64 transition-all duration-300 ">
+      <main className={`flex-1 w-full transition-all duration-300 ${!isMobile ? (isCollapsed ? 'ml-20' : 'ml-64') : 'ml-0'}`}>
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
@@ -54,7 +58,9 @@ function AppContent() {
 export default function App() {
   return (
     <Router>
-      <AppContent />
+      <SidebarProvider>
+        <AppContent />
+      </SidebarProvider>
     </Router>
   );
 }
