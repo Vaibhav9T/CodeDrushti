@@ -60,7 +60,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="p-8 max-w-7xl mx-auto min-h-screen">
+    <div className="px-12 py-20 max-w-7xl mx-auto min-h-screen">
       
       {/* HEADER */}
       <div className="mb-8">

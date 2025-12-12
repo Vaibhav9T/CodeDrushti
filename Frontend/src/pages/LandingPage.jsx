@@ -13,7 +13,7 @@ export default function LandingPage() {
     navigate('/register');
   }
   return (
-    <div className="px-12 py-20 max-w-6xl mx-auto">
+    <div className="px-12 py-20 max-w-7xl mx-auto">
       <div className="bg-[#111a1f] rounded-3xl p-16 border border-gray-800 relative overflow-hidden shadow-2xl">
         <div className="absolute top-[-50%] right-[-10%] w-[500px] h-[500px] bg-cyan-500/10 blur-[100px] pointer-events-none" />
         
@@ -26,7 +26,7 @@ export default function LandingPage() {
             providing instant analysis, security checks, and refactoring tips.
           </p>
           
-          <div className="flex space-x-4">
+          <div className="flex space-x-4 md:flex-row flex-col md:space-y-0 space-y-4">
             <button className="bg-cyan-400 hover:bg-cyan-300 text-black font-bold px-8 py-3 rounded-lg transition-all shadow-[0_0_20px_rgba(34,211,238,0.3)] cursor-pointer" onClick={handleGetStarted}>
               Get Started
             </button>
@@ -41,7 +41,7 @@ export default function LandingPage() {
         <h2 className="text-3xl font-bold mb-4 text-white">Why CodeDrushti?</h2>
         <p className="text-gray-400 mb-10">Our AI-powered platform provides instant, actionable feedback.</p>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
           <FeatureCard 
             icon={<Search className="text-cyan-400" size={32} />}
             title="Instant Analysis"
