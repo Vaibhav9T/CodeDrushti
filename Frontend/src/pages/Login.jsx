@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { User, Lock, Eye, EyeOff } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -9,6 +9,8 @@ const Login = () => {
     password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -17,15 +19,22 @@ const Login = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log('Login logic here:', formData);
-    if (formData.username=='vaibhavtembukadea09@gmail.com' && formData.password=='Vaibhav@123') {
-     navigate('/dashboard');
-     isAuthenticated=true;
+    
+    // Replace this with actual API call
+    if (formData.username === 'vaibhavtembukadea09@gmail.com' && formData.password === 'Vaibhav@123') {
+      // Call login with token and user data
+      const token = 'your-jwt-token'; // Replace with actual token from API
+      const userData = {
+        email: formData.username,
+        name: 'Vaibhav' // Replace with actual user data from API
+      };
+      
+      login(token, userData);
+      navigate('/dashboard');
     } else {
       alert('Wrong Credentials');
     }
   };
-
-  const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-[#0f1214] flex items-center justify-center p-4">
       {/* Glow Effect Background */}
