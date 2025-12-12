@@ -1,15 +1,16 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, History, PlusCircle, User, Settings, LogOut, BookOpen, LogIn, LayoutGrid 
 } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
-import {useNavigate} from 'react-router-dom';
-
-const Sidebar = ({ isAuthenticated }) => {
+const Sidebar = () => {
   const location = useLocation();
-  const isActive = (path) => location.pathname === path;
   const navigate = useNavigate();
+  const { isAuthenticated, logout } = useAuth();
+  
+  const isActive = (path) => location.pathname === path;
 
   const authMenuItems = [
     { name: 'Dashboard', icon: LayoutGrid, path: '/dashboard' },
@@ -25,8 +26,8 @@ const Sidebar = ({ isAuthenticated }) => {
   ];
 
   const handleLogout = () => {
-    navigate('/Login');
-     return(window.location.reload());
+    logout(); // Clear auth state
+    navigate('/login'); // Navigate to login page
   };
   
   return (
