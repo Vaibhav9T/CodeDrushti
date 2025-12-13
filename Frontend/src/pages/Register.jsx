@@ -2,7 +2,7 @@ import { useState } from "react";
 import {User, Eye, EyeOff, Lock, Form, CheckIcon} from 'lucide-react';
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { auth, createUserWithEmailAndPassword, googleProvider, signInWithPopup, updateProfile } from '../utils/firebase';
+import { auth, createUserWithEmailAndPassword, googleProvider, signInWithPopup, updateProfile, githubProvider } from '../utils/firebase';
 
 const Register=()=>{
     const [formData, setFormData] = useState({
@@ -57,7 +57,7 @@ const Register=()=>{
   const handleGoogleSignIn = async () => {
     try {
       await signInWithPopup(auth, googleProvider);
-      navigate('/dashboard');
+      navigate('/dashboard'); // Redirect to dashboard
     } catch (err) {
       setError("Google Sign-In failed");
     }
@@ -66,7 +66,7 @@ const Register=()=>{
   const handleGithubSignIn = async () => {
   try {
     await signInWithPopup(auth, githubProvider);
-    navigate('/'); // Redirect to dashboard
+    navigate('/dashboard'); // Redirect to dashboard
   } catch (err) {
     console.error(err);
     // Handle errors (e.g. account-exists-with-different-credential)
