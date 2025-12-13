@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { User, Lock, Eye, EyeOff } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { auth, signInWithEmailAndPassword, googleProvider, signInWithPopup } from '../utils/firebase';
+import { auth, signInWithEmailAndPassword, googleProvider, signInWithPopup, githubProvider } from '../utils/firebase';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -56,7 +56,7 @@ const Login = () => {
  const handleGithubSignIn = async () => {
   try {
     await signInWithPopup(auth, githubProvider);
-    navigate('/'); // Redirect to dashboard
+    navigate('/dashboard'); // Redirect to dashboard
   } catch (err) {
     console.error(err);
     // Handle errors (e.g. account-exists-with-different-credential)
