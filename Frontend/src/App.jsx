@@ -9,6 +9,7 @@ import Register from './pages/Register.jsx';
 import { SidebarProvider } from './contexts/SidebarContext';
 import { useSidebar } from './contexts/SidebarContext';
 import Documentation from './pages/Documentation';
+import ForgotPassword from './pages/ForgotPassword.jsx';
 
 function AppContent() {
   const { isCollapsed, isMobile } = useSidebar();
@@ -23,6 +24,7 @@ function AppContent() {
           <Route path="/login" element={<Login />} />
           <Route path='/register' element={<Register/>}/>
           <Route path="/docs" element={<Documentation/>} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           
           {/* Protected Routes */}
           <Route path="/dashboard" element={

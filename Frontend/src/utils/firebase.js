@@ -5,6 +5,7 @@ import { getAuth, GoogleAuthProvider,
   GithubAuthProvider,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  sendPasswordResetEmail,
   signInWithPopup,
   signOut,
   updateProfile
@@ -32,6 +33,7 @@ const githubProvider = new GithubAuthProvider();
 export { auth, googleProvider, analytics,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  sendPasswordResetEmail,
   signInWithPopup,
   signOut
   ,updateProfile, githubProvider
