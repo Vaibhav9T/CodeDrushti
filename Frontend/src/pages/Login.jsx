@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { User, Lock, Eye, EyeOff } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { auth, signInWithEmailAndPassword, googleProvider, signInWithPopup, githubProvider } from '../utils/firebase';
+import { auth,db, signInWithEmailAndPassword, googleProvider, signInWithPopup, githubProvider } from '../utils/firebase';
+import { collection, query, where, getDocs } from "firebase/firestore";
 
 const Login = () => {
   const [formData, setFormData] = useState({
-    email: '',
+    identifire: '',
     password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -20,15 +21,35 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
   e.preventDefault();
-  if (!formData.email || !formData.password) {
-    setError("Please fill in all fields");
-    return;
-  }
+
+  console.log("Attempting Login with:", formData.identifier);
+  let emailToUse = formData.identifire;
 
   try {
-    const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
+
+    if (!formData.identifire.includes('@')) {
+        
+        // 2. Query Firestore to find the email associated with this username
+        const q = query(
+          collection(db, "users"), 
+          where("username", "==", formData.identifire)
+        );
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+          throw new Error("Username or email not found");
+        }
+
+        // 3. Get the email from the database result
+        querySnapshot.forEach((doc) => {
+          emailToUse = doc.data().email;
+        });
+      }
+
+    const userCredential = await signInWithEmailAndPassword(auth, emailToUse, formData.password);
     const user = userCredential.user;
 
+    
     // 1. GET THE TOKEN CORRECTLY
     const accessToken = await user.getIdToken(); 
 
@@ -40,7 +61,11 @@ const Login = () => {
     login(accessToken, user);
   } catch (err) {
     console.error("Login Error:", err); // Now this will show real Firebase errors if they happen
-    setError("Invalid email or password");
+    if (err.message === "Username not found") {
+        setError("Username not found");
+      } else {
+        setError("Invalid credentials");
+      }
   }
 };
 
@@ -88,11 +113,11 @@ const Login = () => {
             </label>
             <div className="relative group">
               <input
-                type="email"
-                name="email"
-                value={formData.email}
+                type="text"
+                name="identifire"
+                value={formData.identifire}
                 onChange={handleChange}
-                placeholder="Enter your email"
+                placeholder="Enter your email or username"
                 className="w-full bg-[#0d1117] border border-gray-700 text-white rounded-xl px-4 py-3 outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all placeholder:text-gray-600"
                 required
               />

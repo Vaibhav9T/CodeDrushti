@@ -2,7 +2,8 @@ import { useState } from "react";
 import {User, Eye, EyeOff, Lock, Form, CheckIcon} from 'lucide-react';
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { auth, createUserWithEmailAndPassword, googleProvider, signInWithPopup, updateProfile, githubProvider } from '../utils/firebase';
+import { doc, setDoc } from "firebase/firestore";
+import { auth,db, createUserWithEmailAndPassword, googleProvider, signInWithPopup, updateProfile, githubProvider } from '../utils/firebase';
 
 const Register=()=>{
     const [formData, setFormData] = useState({
@@ -44,6 +45,12 @@ const Register=()=>{
       // 3. Update the profile with the username
       await updateProfile(user, {
         displayName: formData.username
+      });
+
+      await setDoc(doc(db, "users", user.uid), {
+        username: formData.username,
+        email: formData.email,
+        uid: user.uid
       });
 
       console.log("User created with username:", user.displayName);
