@@ -4,6 +4,7 @@ import Sidebar from './components/Sidebar';
 import ProtectedRoute from './components/ProtectedRoute';
 import LandingPage from './pages/LandingPage';
 import Dashboard from './pages/Dashboard';
+import Profile from './pages/Profile.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import { SidebarProvider } from './contexts/SidebarContext';
@@ -44,7 +45,7 @@ function AppContent() {
           } />
           <Route path="/profile" element={
             <ProtectedRoute>
-              <div className="text-white p-10">Profile</div>
+              <Profile />
             </ProtectedRoute>
           } />
           <Route path="/settings" element={
