@@ -5,6 +5,7 @@ const SidebarContext = createContext();
 export const SidebarProvider = ({ children }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
 
   // Detect mobile screen size
   useEffect(() => {
@@ -22,9 +23,16 @@ export const SidebarProvider = ({ children }) => {
       }
     };
 
+    const checkTablet = () => {
+    const tablet = window.innerWidth >= 768 && window.innerWidth < 1024;
+    setIsTablet(tablet);
+  };
+    checkTablet();
     checkMobile();
+
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
+   
   }, []);
 
   const toggleSidebar = (newState) => {
@@ -34,8 +42,10 @@ export const SidebarProvider = ({ children }) => {
     }
   };
 
+  
+
   return (
-    <SidebarContext.Provider value={{ isCollapsed, isMobile, toggleSidebar }}>
+    <SidebarContext.Provider value={{ isCollapsed, isMobile, toggleSidebar, isTablet }}>
       {children}
     </SidebarContext.Provider>
   );

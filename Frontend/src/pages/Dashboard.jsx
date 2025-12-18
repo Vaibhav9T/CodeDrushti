@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useLayoutEffect } from 'react';
 import { 
   Play, 
   AlertTriangle, 
@@ -6,20 +6,47 @@ import {
   Zap, 
   CheckCircle, 
   FileCode, 
-  Loader2 
+  Loader2 ,
+  Upload
 } from 'lucide-react';
 
 import {v4 as uuidv4} from 'uuid';
 import { doc, setDoc, serverTimestamp } from "firebase/firestore"; 
 import { db, auth } from '../utils/firebase';
+import { useSidebar } from '../contexts/SidebarContext';
+
 
 const Dashboard = () => {
+
+  const textareaRef = useRef(null);
+  const [value, setValue] = useState('');
+  const MIN_TEXTAREA_HEIGHT = 32; 
+
+  
+
+  useLayoutEffect(() => {
+    // Check if the ref is connected to a DOM element
+    if (textareaRef.current) {
+      // Reset height to "inherit" to recalculate the scrollHeight correctly (important for shrinking)
+      textareaRef.current.style.height = 'inherit';
+      
+      // Set the height to the scrollHeight or a minimum height
+      textareaRef.current.style.height = `${Math.max(
+        textareaRef.current.scrollHeight,
+        MIN_TEXTAREA_HEIGHT
+      )}px`;
+    }
+  }, [value]);
+
   const [code, setCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('bugs');
   const [analysisResult, setAnalysisResult] = useState(null);
+  const { isCollapsed, isMobile, toggleSidebar, isTablet } = useSidebar();
 
   const saveReviewToHistory = async (code, reviewResult) => {
+ 
+
   if (!auth.currentUser) return;
 
   const reviewId = uuidv4();
@@ -40,7 +67,27 @@ const Dashboard = () => {
   const BACKEND_URL = "https://codedrushti.onrender.com/ai/get-review"; 
   // ---------------------------------------------------------------------------
 
+  const fileInputRef = useRef(null);
+
+  const onUploadFile = (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const fileContent = e.target.result;
+          setCode(fileContent);
+          setValue(fileContent);
+        }
+        reader.readAsText(file);
+      }
+    };
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
   const handleAnalyze = async () => {
+
     if (!code.trim()) {
       alert("Please paste some code first!");
       return;
@@ -75,6 +122,8 @@ const Dashboard = () => {
     } finally {
       setIsLoading(false); 
     }
+
+    
   };
 
   return (
@@ -82,28 +131,60 @@ const Dashboard = () => {
       
       {/* HEADER */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white mb-2">Submit Your Code for AI Review</h1>
+        <h1 className="text-3xl font-bold text-white mb-2">Stuck on a coding problem? Let Code Drushti help</h1>
         <p className="text-gray-400">Paste your code below or drag and drop a file to get started.</p>
       </div>
 
       {/* INPUT AREA */}
       <div className="relative mb-8 group">
         <div className="absolute -inset-0.5 bg-linear-to-r from-cyan-500 to-blue-600 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
-        <div className="relative bg-[#111a1f] rounded-2xl border border-gray-800 p-1">
+        <div className="relative bg-[#111a1f] rounded-2xl border border-gray-800 p-1 overflow-hidden">
           <textarea
+            ref={textareaRef}
             value={code}
-            onChange={(e) => setCode(e.target.value)}
+            onChange={(e) => {
+              setCode(e.target.value);
+              setValue(e.target.value);
+            }}
             placeholder="// Paste your code here..."
-            className="w-full h-64 bg-[#0d1317] text-gray-300 p-6 rounded-xl focus:outline-none focus:ring-1 focus:ring-cyan-500/50 font-mono text-sm resize-none"
+            className="w-full h-64 bg-[#0d1317] text-gray-300 p-6 rounded-xl focus:outline-none focus:ring-1 focus:ring-cyan-500/50 font-mono text-sm resize-none max-h-96 no-scrollbar overflow-y-auto no-scrollbar"
             spellCheck="false"
           />
           
           {/* ACTION BAR */}
           <div className="flex justify-between items-center px-4 py-3 bg-[#111a1f] rounded-b-xl border-t border-gray-800">
              <div className="flex space-x-4 text-xs text-gray-500">
-                <span className="flex items-center hover:text-cyan-400 cursor-pointer transition"><FileCode size={14} className="mr-1"/> Auto-Detect Language</span>
+                <span className="flex items-center hover:text-cyan-400 cursor-pointer transition "><FileCode size={14} className="mr-1"/> Auto-Detect Language</span>
              </div>
 
+            <div className="space-x-4 ">
+              
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".js,.jsx,.ts,.tsx,.py,.java,.cpp,.c,.cs,.rb,.go,.php,.html,.css,.json,.xml,.swift,.kt,.rs"
+                onChange={onUploadFile}
+                className="hidden"
+                id="file-upload"
+              />
+              <button
+                onClick={handleUploadClick}
+                className="flex items-center px-4 py-2.5 rounded-lg font-bold text-white shadow-lg transition-all cursor-pointer bg-linear-to-r from-cyan-500 to-blue-600 hover:scale-105 hover:shadow-cyan-500/25 active:scale-95 text-center"
+              >
+                {
+                  !isMobile || isTablet ? (
+                <>
+                  <Upload size={16} className="mr-2 fill-current" />
+                  Upload File
+                </>
+                  ) : (
+                    <Upload size={16} className="fill-current gap-2" />
+                  )
+                }
+              </button>
+
+            </div>
+              
              <button 
               onClick={async () => {
                 await handleAnalyze();
@@ -120,7 +201,11 @@ const Dashboard = () => {
                 }
               `}
             >
-              {isLoading ? (
+              {
+              !isMobile ? (
+                <>
+                {
+                  isLoading ? (
                 <>
                   <Loader2 size={18} className="animate-spin mr-2" />
                   Scanning...
@@ -132,6 +217,18 @@ const Dashboard = () => {
                 </>
                 
               )}
+              </>
+              ) : (
+                <>
+                {isLoading ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : (
+                  <Play size={18} className="fill-current" />
+                )
+            }
+            </>
+              )
+              }
             </button>
           </div>
         </div>
