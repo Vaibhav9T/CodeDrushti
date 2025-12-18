@@ -13,9 +13,11 @@
     "@tailwindcss/vite": "^4.1.17",
     "firebase": "^12.6.0",
     "lucide-react": "^0.556.0",
+    "prismjs": "^1.30.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.10.1",
+    "react-simple-code-editor": "^0.14.1",
     "tailwindcss": "^4.1.17",
     "uuid": "^13.0.0"
   },
