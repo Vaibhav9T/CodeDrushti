@@ -9,12 +9,30 @@ import {
   Loader2 
 } from 'lucide-react';
 
+import {v4 as uuidv4} from 'uuid';
+import { doc, setDoc, serverTimestamp } from "firebase/firestore"; 
+import { db, auth } from '../utils/firebase';
+
 const Dashboard = () => {
   const [code, setCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('bugs');
   const [analysisResult, setAnalysisResult] = useState(null);
 
+  const saveReviewToHistory = async (code, reviewResult) => {
+  if (!auth.currentUser) return;
+
+  const reviewId = uuidv4();
+  await setDoc(doc(db, "reviews", reviewId), {
+    userId: auth.currentUser.uid,
+    code: code,
+    reviewContent: reviewResult,
+    linesOfCode: code.split('\n').length, // Save line count for easy math later
+    timestamp: serverTimestamp(),
+    // Optional: save timeTaken if you track how long the AI took
+    timeTakenMs: 1500 // example
+  });
+};
   // ---------------------------------------------------------------------------
   // 🔴 STEP 1: PASTE YOUR RENDER BACKEND URL HERE
   // Example: "https://my-app.onrender.com/ai/get-review"
@@ -87,7 +105,12 @@ const Dashboard = () => {
              </div>
 
              <button 
-              onClick={handleAnalyze}
+              onClick={async () => {
+                await handleAnalyze();
+                if (analysisResult) {
+                  await saveReviewToHistory(code, analysisResult);
+                }
+              }}
               disabled={isLoading || !code}
               className={`
                 flex items-center px-6 py-2.5 rounded-lg font-bold text-white shadow-lg transition-all cursor-pointer
@@ -107,6 +130,7 @@ const Dashboard = () => {
                   <Play size={18} className="mr-2 fill-current" />
                   Analyze Code
                 </>
+                
               )}
             </button>
           </div>

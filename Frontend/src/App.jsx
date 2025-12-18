@@ -11,6 +11,7 @@ import { SidebarProvider } from './contexts/SidebarContext';
 import { useSidebar } from './contexts/SidebarContext';
 import Documentation from './pages/Documentation';
 import ForgotPassword from './pages/ForgotPassword.jsx';
+import { CodeHistoryProvider } from './contexts/codeHistoryContext.jsx';
 
 function AppContent() {
   const { isCollapsed, isMobile } = useSidebar();
@@ -61,10 +62,12 @@ function AppContent() {
 
 export default function App() {
   return (
+    <CodeHistoryProvider>
     <Router>
       <SidebarProvider>
         <AppContent />
       </SidebarProvider>
     </Router>
+    </CodeHistoryProvider>
   );
 }
