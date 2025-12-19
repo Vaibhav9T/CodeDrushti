@@ -16,6 +16,14 @@ CodeDrushti is a MERN‑stack web application that helps developers review code 
 - Reusable UI components: `Sidebar` for navigation/layout.
 - Extensible: Add linters, formatters, and custom rules.
 
+## Screenshots
+
+### Landing Page
+![CodeDrushti LandingPage](image-1.png)
+
+### Dashboard - Code Review
+![CodeDrushti Dashboard](image.png)
+
 ## Tech Stack
 
 - Backend: Node.js, Express
