@@ -6,6 +6,11 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { useSidebar } from '../contexts/SidebarContext';
 
+import { auth } from '../utils/firebase';
+import { signOut } from 'firebase/auth';
+// import { useNavigate } from 'react-router-dom';
+// import { useAuth } from '../contexts/AuthContext';
+
 const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -34,9 +39,32 @@ const Sidebar = () => {
     { name: 'Documentation', icon: BookOpen, path: '/docs' },
   ];
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
+  // const handleLogout = () => {
+  //   logout();
+  //   navigate('/login');
+  // };
+
+  // const navigate = useNavigate();
+  // const { logout } = useAuth(); // Your context logout function
+
+  const handleLogout = async () => {
+    try {
+      // 1. Tell Firebase to kill the session
+      await signOut(auth);
+      
+      // 2. Clear your local storage
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      
+      // 3. Clear your React Context
+      logout(); 
+      
+      // 4. Send the user back to the login page
+      navigate('/login');
+      
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
   };
 
   const toggleSidebarFunc = () => {

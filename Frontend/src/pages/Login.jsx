@@ -1,93 +1,94 @@
-import React, { useState } from 'react';
-import { User, Lock, Eye, EyeOff } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { User, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { auth,db, signInWithEmailAndPassword, googleProvider, signInWithPopup, githubProvider } from '../utils/firebase';
+import { auth, db, signInWithEmailAndPassword, googleProvider, githubProvider, signInWithPopup } from '../utils/firebase';
 import { collection, query, where, getDocs } from "firebase/firestore";
 
 const Login = () => {
+  // Fixed typo: identifire -> identifier
   const [formData, setFormData] = useState({
-    identifire: '',
+    identifier: '', 
     password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [error, setError] = useState('');
-  
+  const [loading, setLoading] = useState(false);
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
+
+  // --------------------------------
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError(''); // Clear errors when user starts typing again
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
+    setLoading(true);
+    setError('');
 
-  console.log("Attempting Login with:", formData.identifier);
-  let emailToUse = formData.identifire;
+    console.log("Attempting Login with:", formData.identifier);
+    let emailToUse = formData.identifier;
 
-  try {
+    try {
+      if (!formData.identifier.includes('@')) {
+          // Query Firestore to find the email associated with this username
+          const q = query(
+            collection(db, "users"), 
+            where("username", "==", formData.identifier)
+          );
+          const querySnapshot = await getDocs(q);
 
-    if (!formData.identifire.includes('@')) {
-        
-        // 2. Query Firestore to find the email associated with this username
-        const q = query(
-          collection(db, "users"), 
-          where("username", "==", formData.identifire)
-        );
-        const querySnapshot = await getDocs(q);
+          if (querySnapshot.empty) {
+            throw new Error("Username or email not found");
+          }
 
-        if (querySnapshot.empty) {
-          throw new Error("Username or email not found");
+          // Get the email from the database result
+          querySnapshot.forEach((doc) => {
+            emailToUse = doc.data().email;
+          });
         }
 
-        // 3. Get the email from the database result
-        querySnapshot.forEach((doc) => {
-          emailToUse = doc.data().email;
-        });
-      }
-
-    const userCredential = await signInWithEmailAndPassword(auth, emailToUse, formData.password);
-    const user = userCredential.user;
-
-    
-    // 1. GET THE TOKEN CORRECTLY
-    const accessToken = await user.getIdToken(); 
-
-    // 2. SAVE IT
-    localStorage.setItem('token', accessToken);
-    localStorage.setItem('user', JSON.stringify(user));
-
-    navigate('/dashboard'); // Redirect to dashboard
-    login(accessToken, user);
-  } catch (err) {
-    console.error("Login Error:", err); // Now this will show real Firebase errors if they happen
-    if (err.message === "Username not found") {
-        setError("Username not found");
+      // Just sign in. The AuthContext listener will detect the change and redirect automatically.
+      await signInWithEmailAndPassword(auth, emailToUse, formData.password);
+    } catch (err) {
+      console.error("Login Error:", err); 
+      setLoading(false);
+      
+      if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
+          setError("Invalid password. Did you register using Google or GitHub? If so, please use those buttons below.");
+      } else if (err.message === "Username or email not found") {
+          setError("Username or email not found");
       } else {
-        setError("Invalid credentials");
+          setError("Failed to log in. Please check your credentials.");
       }
-  }
-};
+    }
+  };
 
   const handleGoogleSignIn = async () => {
     try {
       await signInWithPopup(auth, googleProvider);
-      navigate('/dashboard'); // Redirect to dashboard
     } catch (err) {
       setError("Google Sign-In failed");
     }
   };
 
- const handleGithubSignIn = async () => {
-  try {
-    await signInWithPopup(auth, githubProvider);
-    navigate('/dashboard'); // Redirect to dashboard
-  } catch (err) {
-    console.error(err);
-    // Handle errors (e.g. account-exists-with-different-credential)
-    setError("GitHub Sign-In failed");
-  }
-};
+  const handleGithubSignIn = async () => {
+    try {
+      await signInWithPopup(auth, githubProvider);
+    } catch (err) {
+      console.error(err);
+      setError("GitHub Sign-In failed");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#0f1214] flex items-center justify-center p-4">
@@ -102,7 +103,9 @@ const Login = () => {
           <h1 className="text-3xl font-bold text-white mb-2">CodeDrushti</h1>
           <p className="text-gray-400 text-sm">Sign in to supercharge your code reviews.</p>
         </div>
-        {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
+        
+        {error && <p className="text-red-500 text-sm text-center mb-4 bg-red-500/10 p-2 rounded-lg border border-red-500/20">{error}</p>}
+        
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           
@@ -114,8 +117,8 @@ const Login = () => {
             <div className="relative group">
               <input
                 type="text"
-                name="identifire"
-                value={formData.identifire}
+                name="identifier" // Fixed to match state
+                value={formData.identifier} // Fixed to match state
                 onChange={handleChange}
                 placeholder="Enter your email or username"
                 className="w-full bg-[#0d1117] border border-gray-700 text-white rounded-xl px-4 py-3 outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all placeholder:text-gray-600"
@@ -160,9 +163,10 @@ const Login = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full bg-linear-to-r from-cyan-500 to-blue-600 text-white font-bold py-3.5 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-cyan-500/20"
+            disabled={loading}
+            className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold py-3.5 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           >
-            Login
+            {loading ? <Loader2 className="animate-spin w-5 h-5" /> : "Login"}
           </button>
         </form>
 
@@ -187,7 +191,7 @@ const Login = () => {
         {/* Social Login Buttons */}
         <div className="flex justify-center gap-4">
           {/* Google Button */}
-          <button className="p-3 bg-[#0d1117] border border-gray-700 rounded-full hover:bg-gray-800 hover:border-gray-600 transition-all group"onClick={handleGoogleSignIn}>
+          <button className="p-3 bg-[#0d1117] border border-gray-700 rounded-full hover:bg-gray-800 hover:border-gray-600 transition-all group" onClick={handleGoogleSignIn}>
             <svg className="w-6 h-6" viewBox="0 0 24 24">
               <path
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"

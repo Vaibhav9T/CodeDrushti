@@ -1,11 +1,11 @@
 import { useState } from "react";
-import {User, Eye, EyeOff, Lock, Form, CheckIcon} from 'lucide-react';
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import {User, Eye, EyeOff, Lock, Form, CheckIcon, Loader2} from 'lucide-react';
+import { Link, useNavigate } from "react-router-dom";
 import { doc, setDoc } from "firebase/firestore";
-import { auth,db, createUserWithEmailAndPassword, googleProvider, signInWithPopup, updateProfile, githubProvider } from '../utils/firebase';
+import { auth,db, createUserWithEmailAndPassword, googleProvider, signInWithPopup, updateProfile, githubProvider, signOut } from '../utils/firebase';
 
 const Register=()=>{
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         username: '',
         email:'',
@@ -13,6 +13,7 @@ const Register=()=>{
         confirmPassword:''
       });
 
+      const [loading, setLoading] = useState(false);
       const [showPassword, setShowPassword] = useState(false);
       const [error, setError] = useState('');
       const handleChange = (e) => {
@@ -23,12 +24,16 @@ const Register=()=>{
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    setLoading(true);
 
     if (!termsAccepted) {
+      setLoading(false);
       return setError("You must accept the Terms and Conditions to create an account.");
     }
 
     if (formData.password !== formData.confirmPassword) {
+      setLoading(false);
       return setError("Passwords do not match");
     }
 
@@ -54,10 +59,15 @@ const Register=()=>{
       });
 
       console.log("User created with username:", user.displayName);
-      navigate('/login'); // Redirect after success
+      await signOut(auth);
+      // Delay navigation slightly to allow AuthContext to update state to 'logged out'
+      setTimeout(() => {
+        navigate('/login');
+      }, 500);
 
     } catch (err) {
       setError(err.message.replace("Firebase:", "").trim());
+      setLoading(false);
     }
   };
 
@@ -80,8 +90,6 @@ const Register=()=>{
     setError("GitHub Sign-In failed");
   }
 };
-
-   const navigate = useNavigate();
 
    return(
 
@@ -207,9 +215,10 @@ const Register=()=>{
                           {/* Submit Button */}
                           <button
                             type="submit"
-                            className="w-full bg-linear-to-r from-cyan-500 to-blue-600 text-white font-bold py-3.5 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-cyan-500/20"
+                            disabled={loading}
+                            className="w-full bg-linear-to-r from-cyan-500 to-blue-600 text-white font-bold py-3.5 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                           >
-                           Register
+                           {loading ? <Loader2 className="animate-spin w-5 h-5" /> : "Register"}
                           </button>
                         </form>
                 
