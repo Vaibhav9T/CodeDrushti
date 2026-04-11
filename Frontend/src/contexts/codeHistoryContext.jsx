@@ -1,42 +1,54 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { auth, db } from '../utils/firebase';
 import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
+import { db, auth } from '../utils/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 
 const CodeHistoryContext = createContext();
+
+export const useCodeHistory = () => useContext(CodeHistoryContext);
 
 export const CodeHistoryProvider = ({ children }) => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
-  const currentUser = auth.currentUser;
+  const [currentUser, setCurrentUser] = useState(null);
 
+  // 1. Listen for User Authentication State
   useEffect(() => {
-    if (!currentUser) {
-      setReviews([]);
-      setLoading(false);
-      return;
-    }
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+      if (!user) {
+        setReviews([]);
+        setLoading(false);
+      }
+    });
+    return () => unsubscribeAuth();
+  }, []);
 
-    // Real-time listener: This runs automatically whenever the DB changes
+  // 2. Listen to Firestore in Real-Time for that specific user
+  useEffect(() => {
+    if (!currentUser) return;
+
+    setLoading(true);
+    
     const q = query(
-      collection(db, "reviews"),
-      where("userId", "==", currentUser.uid),
-      orderBy("timestamp", "desc")
+      collection(db, 'reviews'),
+      where('userId', '==', currentUser.uid),
+      orderBy('timestamp', 'desc') // Show newest reviews first
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const reviewsData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setReviews(reviewsData);
+    const unsubscribeSnapshot = onSnapshot(q, (querySnapshot) => {
+      const fetchedReviews = [];
+      querySnapshot.forEach((doc) => {
+        fetchedReviews.push({ id: doc.id, ...doc.data() });
+      });
+      setReviews(fetchedReviews);
       setLoading(false);
     }, (error) => {
-      console.error("Error fetching history:", error);
+      console.error("Firestore Query Error:", error.message);
       setLoading(false);
     });
 
-    // Cleanup listener when component unmounts
-    return () => unsubscribe();
+    return () => unsubscribeSnapshot();
   }, [currentUser]);
 
   return (
@@ -45,6 +57,3 @@ export const CodeHistoryProvider = ({ children }) => {
     </CodeHistoryContext.Provider>
   );
 };
-
-// Custom hook to use it easily in other files
-export const useCodeHistory = () => useContext(CodeHistoryContext);

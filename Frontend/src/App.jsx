@@ -11,13 +11,16 @@ import { SidebarProvider } from './contexts/SidebarContext';
 import { useSidebar } from './contexts/SidebarContext';
 import Documentation from './pages/Documentation';
 import ForgotPassword from './pages/ForgotPassword.jsx';
+import NewReview from './pages/NewReview.jsx';
+import MyReviews from './pages/MyReviews.jsx'; // <--- IMPORT THIS
 import { CodeHistoryProvider } from './contexts/codeHistoryContext.jsx';
+import { ThemeProvider } from './contexts/ThemeContext.jsx';
 
 function AppContent() {
   const { isCollapsed, isMobile } = useSidebar();
 
   return (
-    <div className="flex min-h-screen bg-[#0d1317]">
+    <div className="flex min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
       <Sidebar className="flex-0"/>
     
       <main className={`flex-1 w-full transition-all duration-300 ${!isMobile ? (isCollapsed ? 'ml-20' : 'ml-64') : 'ml-0'}`}>
@@ -28,30 +31,33 @@ function AppContent() {
           <Route path="/docs" element={<Documentation/>} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           
-          {/* Protected Routes */}
           <Route path="/dashboard" element={
             <ProtectedRoute>
               <Dashboard />
             </ProtectedRoute>
           } />
+          
           <Route path="/reviews" element={
             <ProtectedRoute>
-              <div className="text-white p-10">My Reviews</div>
+              <MyReviews /> 
             </ProtectedRoute>
           } />
+          
           <Route path="/new-review" element={
             <ProtectedRoute>
-              <div className="text-white p-10">New Review</div>
+              <NewReview />
             </ProtectedRoute>
           } />
+          
           <Route path="/profile" element={
             <ProtectedRoute>
               <Profile />
             </ProtectedRoute>
           } />
+          
           <Route path="/settings" element={
             <ProtectedRoute>
-              <div className="text-white p-10">Settings</div>
+              <div className="text-gray-900 dark:text-white p-10">Settings</div>
             </ProtectedRoute>
           } />
         </Routes>
@@ -62,12 +68,14 @@ function AppContent() {
 
 export default function App() {
   return (
-    <CodeHistoryProvider>
-    <Router>
-      <SidebarProvider>
-        <AppContent />
-      </SidebarProvider>
-    </Router>
-    </CodeHistoryProvider>
+    <ThemeProvider>
+      <CodeHistoryProvider>
+        <Router>
+          <SidebarProvider>
+            <AppContent />
+          </SidebarProvider>
+        </Router>
+      </CodeHistoryProvider>
+    </ThemeProvider>
   );
 }
