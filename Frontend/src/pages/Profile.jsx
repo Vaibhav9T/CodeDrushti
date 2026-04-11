@@ -67,7 +67,7 @@ const Profile = () => {
   const formatDate = (ts) => !ts ? 'Just now' : new Date(ts.seconds * 1000).toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric' });
 
   return (
-    <div className="flex flex-col h-[calc(100vh-88px)] font-sans w-full transition-colors duration-300 relative">
+    <div className="flex flex-col flex-1 h-full min-h-0 font-sans w-full transition-colors duration-300">
       
       {/* FIXED HEADER */}
       <div className="shrink-0 px-6 md:px-8 py-5 border-b border-gray-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 z-10">

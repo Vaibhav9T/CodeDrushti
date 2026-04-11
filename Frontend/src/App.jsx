@@ -14,17 +14,17 @@ import NewReview from './pages/NewReview.jsx';
 import MyReviews from './pages/MyReviews.jsx'; 
 import { CodeHistoryProvider } from './contexts/codeHistoryContext.jsx';
 import { ThemeProvider } from './contexts/ThemeContext.jsx';
-import Reports from './pages/Reports.jsx'; // Add this line
+import Reports from './pages/Reports.jsx'; 
+
 
 function AppContent() {
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
+<div className="flex flex-col  h-[100dvh] bg-slate-50 dark:bg-slate-950 transition-colors duration-300 relative overflow-hidden"> 
       
       <Sidebar />
     
-      {/* Set a precise top padding so content starts exactly below the floating nav */}
-      <main className="flex-1 w-full pt-[88px] transition-all duration-300 flex flex-col">
-        <Routes>
+<main className="flex-1 overflow-y-auto flex flex-col w-full pt-[80px] z-10 relative min-h-0 no-scrollbar">
+  <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path='/register' element={<Register/>}/>

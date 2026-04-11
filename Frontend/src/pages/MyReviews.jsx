@@ -3,6 +3,7 @@ import { Search, Code, Clock, Trash2, ChevronDown, ChevronUp, AlertTriangle, Shi
 import { doc, deleteDoc } from 'firebase/firestore';
 import { db } from '../utils/firebase';
 import { useCodeHistory } from '../contexts/codeHistoryContext';
+import { PageWrapper, StaggerContainer, StaggerItem } from '../components/Animations';
 
 const MyReviews = () => {
   const { reviews, loading } = useCodeHistory();
@@ -43,7 +44,8 @@ const MyReviews = () => {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-88px)] font-sans w-full transition-colors duration-300">
+    <PageWrapper className="flex flex-col h-[calc(100vh-88px)] font-sans w-full transition-colors duration-300">
+    <div className="flex flex-col flex-1 h-full min-h-0 font-sans w-full transition-colors duration-300">
       
       {/* FIXED HEADER */}
       <div className="shrink-0 px-6 md:px-8 py-5 border-b border-gray-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -78,11 +80,13 @@ const MyReviews = () => {
             </div>
           ) : (
             <div className="space-y-4">
+              <StaggerContainer className="space-y-4">
               {filteredReviews.map((review) => {
                 const counts = getIssueCount(review.reviewContent);
                 const isExpanded = expandedId === review.id;
                 
                 return (
+                  <StaggerItem key={review.id}>
                   <div key={review.id} className={`bg-white dark:bg-slate-900 border transition-all duration-300 shadow-sm overflow-hidden ${isExpanded ? 'border-indigo-200 dark:border-indigo-500/30 rounded-2xl' : 'border-gray-100 dark:border-slate-800 rounded-xl hover:border-indigo-100 hover:shadow-md'}`}>
                     <div onClick={() => setExpandedId(isExpanded ? null : review.id)} className="p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4 cursor-pointer">
                       <div className="flex items-center gap-4 flex-1 min-w-0">
@@ -161,13 +165,16 @@ const MyReviews = () => {
                       </div>
                     )}
                   </div>
+                  </StaggerItem>
                 );
               })}
+              </StaggerContainer>
             </div>
           )}
         </div>
       </div>
     </div>
+    </PageWrapper>
   );
 };
 
