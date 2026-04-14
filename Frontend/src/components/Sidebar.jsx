@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   LayoutDashboard, History, PlusCircle, User, LogOut, BookOpen, LogIn, Menu, X, Code2, Bell,
   ShieldAlert, AlertTriangle, CheckCircle, CheckCheck
@@ -10,293 +11,304 @@ import { signOut } from 'firebase/auth';
 import ThemeToggle from './ThemeToggle';
 import { useCodeHistory } from '../contexts/codeHistoryContext';
 
-const Sidebar = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { isAuthenticated, logout } = useAuth();
-  const { reviews } = useCodeHistory();
+const Navbar = () => {
+  const loc = useLocation();
+  const nav = useNavigate();
+  const { isAuthenticated: isAuth, logout: logOff } = useAuth();
+  const { reviews: revs } = useCodeHistory();
   
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [flashState, setFlashState] = useState(null); 
+  const [mobMenu, setMobMenu] = useState(false);
+  const [glow, setGlow] = useState(null); 
   
-  // Notification States
-  const [notifications, setNotifications] = useState([]);
-  const [isNotifOpen, setIsNotifOpen] = useState(false);
-  const notifRef = useRef(null);
+  const [alerts, setAlerts] = useState([]);
+  const [alertsOn, setAlertsOn] = useState(false);
+  const alertRef = useRef(null);
   
-  const prevReviewId = useRef(null);
-  const isInitialMount = useRef(true);
+  const prevId = useRef(null);
+  const isFirst = useRef(true);
 
-  // Close mobile menu and notifications on route change
   useEffect(() => {
-    setIsMobileMenuOpen(false);
-    setIsNotifOpen(false);
-  }, [location.pathname]);
+    setMobMenu(false);
+    setAlertsOn(false);
+  }, [loc.pathname]);
 
-  // Click outside to close notifications
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (notifRef.current && !notifRef.current.contains(event.target)) {
-        setIsNotifOpen(false);
+    const clickOut = (e) => {
+      if (alertRef.current && !alertRef.current.contains(e.target)) {
+        setAlertsOn(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", clickOut);
+    return () => document.removeEventListener("mousedown", clickOut);
   }, []);
 
-  // Real-time Notification Logic
   useEffect(() => {
-    if (!reviews || reviews.length === 0) return;
+    if (!revs || revs.length === 0) return;
 
-    const latestReview = reviews[0];
+    const lastRev = revs[0];
 
-    if (isInitialMount.current) {
-      prevReviewId.current = latestReview.id;
-      isInitialMount.current = false;
+    if (isFirst.current) {
+      prevId.current = lastRev.id;
+      isFirst.current = false;
       return;
     }
 
-    if (latestReview.id !== prevReviewId.current) {
-      prevReviewId.current = latestReview.id;
+    if (lastRev.id !== prevId.current) {
+      prevId.current = lastRev.id;
 
-      const content = latestReview.reviewContent || {};
-      const secCount = content.security?.length || 0;
-      const bugCount = content.bugs?.length || 0;
-      const impCount = content.improvements?.length || 0;
+      const data = lastRev.reviewContent || {};
+      const secNum = data.security?.length || 0;
+      const bugNum = data.bugs?.length || 0;
+      const impNum = data.improvements?.length || 0;
       
-      const hasCritical = content.bugs?.some(b => ['critical', 'high'].includes(b.severity?.toLowerCase()));
-      const hasMajor = content.bugs?.some(b => ['major'].includes(b.severity?.toLowerCase()));
+      const hasCrit = data.bugs?.some(b => ['critical', 'high'].includes(b.severity?.toLowerCase()));
+      const hasMaj = data.bugs?.some(b => ['major'].includes(b.severity?.toLowerCase()));
 
-      let state = 'success';
-      let title = 'Review Clean';
-      let message = `Great job! Code is optimized.`;
+      let status = 'success';
+      let head = 'Review Clean';
+      let msg = `Great job! Code is optimized.`;
 
-      if (secCount > 0 || hasCritical) {
-        state = 'danger';
-        title = 'Critical Issues Detected';
-        message = `Found ${secCount} security flaws and ${bugCount} bugs.`;
-      } else if (hasMajor || bugCount > 0) {
-        state = 'warning';
-        title = 'Bugs Detected';
-        message = `Found ${bugCount} bugs and ${impCount} suggestions.`;
-      } else if (impCount > 0) {
-        state = 'success';
-        title = 'Review Complete';
-        message = `Found ${impCount} areas for improvement.`;
+      if (secNum > 0 || hasCrit) {
+        status = 'danger';
+        head = 'Critical Issues Detected';
+        msg = `Found ${secNum} security flaws and ${bugNum} bugs.`;
+      } else if (hasMaj || bugNum > 0) {
+        status = 'warning';
+        head = 'Bugs Detected';
+        msg = `Found ${bugNum} bugs and ${impNum} suggestions.`;
+      } else if (impNum > 0) {
+        status = 'success';
+        head = 'Review Complete';
+        msg = `Found ${impNum} areas for improvement.`;
       }
 
-      const newNotif = {
+      const newAlert = {
         id: Date.now(),
-        title,
-        message,
-        type: state,
+        title: head,
+        message: msg,
+        type: status,
         time: new Date(),
         read: false,
-        reviewId: latestReview.id
+        reviewId: lastRev.id
       };
 
-      setNotifications(prev => [newNotif, ...prev]);
-      setFlashState(state);
+      setAlerts(p => [newAlert, ...p]);
+      setGlow(status);
 
-      // Turn off flash automatically after 5 seconds if not clicked
-      const timer = setTimeout(() => setFlashState(null), 5000);
-      return () => clearTimeout(timer);
+      const tick = setTimeout(() => setGlow(null), 6000);
+      return () => clearTimeout(tick);
     }
-  }, [reviews]);
+  }, [revs]);
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unread = alerts.filter(a => !a.read).length;
 
-  const markAllAsRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, read: true })));
+  const markRead = () => {
+    setAlerts(alerts.map(a => ({ ...a, read: true })));
   };
 
-  const toggleNotifications = () => {
-    setIsNotifOpen(!isNotifOpen);
-    // FIX: Force the glowing bar to turn off instantly when clicking the bell
-    if (!isNotifOpen) {
-      setFlashState(null); 
-      if (unreadCount > 0) {
-        markAllAsRead();
+  const toggleAlerts = () => {
+    setAlertsOn(!alertsOn);
+    if (!alertsOn) {
+      setGlow(null); 
+      if (unread > 0) {
+        markRead();
       }
     }
   };
 
-  const isActive = (path) => location.pathname === path;
+  const isHere = (path) => loc.pathname === path;
 
-  const authMenuItems = [
+  const authLinks = [
     { name: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
     { name: 'Analyze', icon: PlusCircle, path: '/new-review' },
     { name: 'Reviews', icon: History, path: '/reviews' },
   ];
 
-  const guestMenuItems = [
+  const guestLinks = [
     { name: 'Features', icon: LayoutDashboard, path: '/' },
     { name: 'Docs', icon: BookOpen, path: '/docs' },
   ];
 
-  const handleLogout = async () => {
+  const doLogOut = async () => {
     try {
       await signOut(auth);
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      logout(); 
-      navigate('/login');
-    } catch (error) {
-      console.error(error);
+      logOff(); 
+      nav('/login');
+    } catch (err) {
+      console.error(err);
     }
   };
 
-  // FIX: Added 'animate-pulse' to active states so the bar actually flashes
-  const getFlashStyles = () => {
-    switch(flashState) {
-      case 'danger': return 'animate-pulse border-rose-500 shadow-[0_0_25px_rgba(225,29,72,0.4)] dark:shadow-[0_0_25px_rgba(225,29,72,0.3)] bg-rose-50/90 dark:bg-rose-900/40';
-      case 'warning': return 'animate-pulse border-amber-500 shadow-[0_0_25px_rgba(245,158,11,0.4)] dark:shadow-[0_0_25px_rgba(245,158,11,0.3)] bg-amber-50/90 dark:bg-amber-900/40';
-      case 'success': return 'animate-pulse border-emerald-500 shadow-[0_0_25px_rgba(16,185,129,0.4)] dark:shadow-[0_0_25px_rgba(16,185,129,0.3)] bg-emerald-50/90 dark:bg-emerald-900/40';
-      default: return 'border-gray-200/50 dark:border-slate-800/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none bg-white/80 dark:bg-slate-900/80';
+  const getStyle = () => {
+    switch(glow) {
+      case 'danger': return 'border-rose-500/30 dark:border-rose-500/50 shadow-[0_0_50px_-10px_rgba(244,63,94,0.15)] dark:shadow-[0_0_50px_-10px_rgba(244,63,94,0.3)] bg-rose-50/90 dark:bg-rose-950/40';
+      case 'warning': return 'border-amber-500/30 dark:border-amber-500/50 shadow-[0_0_50px_-10px_rgba(245,158,11,0.15)] dark:shadow-[0_0_50px_-10px_rgba(245,158,11,0.3)] bg-amber-50/90 dark:bg-amber-950/40';
+      case 'success': return 'border-emerald-500/30 dark:border-emerald-500/50 shadow-[0_0_50px_-10px_rgba(16,185,129,0.15)] dark:shadow-[0_0_50px_-10px_rgba(16,185,129,0.3)] bg-emerald-50/90 dark:bg-emerald-950/40';
+      default: return 'border-black/5 dark:border-white/5 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.05)] dark:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.6)] bg-white/80 dark:bg-[#050505]/80';
     }
   };
 
-  const formatTime = (date) => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const fmtTime = (d) => {
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   return (
-    <div className="fixed top-4 left-4 right-4 md:left-8 md:right-8 lg:left-1/2 lg:-translate-x-1/2 lg:w-full lg:max-w-6xl z-50 transition-all duration-300">
+    <div className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4 md:px-8 pointer-events-none">
       
-      <div className={`backdrop-blur-xl border rounded-2xl px-4 md:px-6 py-3 flex items-center justify-between transition-all duration-300 ease-in-out ${getFlashStyles()}`}>
+      <div className={`pointer-events-auto w-full max-w-6xl backdrop-blur-3xl border rounded-[32px] px-5 py-3.5 flex items-center justify-between transition-all duration-700 ease-out ${getStyle()}`}>
         
-        <Link to={isAuthenticated ? "/dashboard" : "/"} className="flex items-center gap-3 shrink-0">
-          <div className="w-9 h-9 bg-indigo-600 dark:bg-indigo-500 rounded-xl flex items-center justify-center text-white shadow-sm transition-colors duration-300">
-            <Code2 size={20} />
+        <Link to={isAuth ? "/dashboard" : "/"} className="flex items-center gap-3 shrink-0 group">
+          <div className="w-10 h-10 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-500/20 dark:to-purple-500/20 border border-indigo-200/50 dark:border-white/10 rounded-2xl flex items-center justify-center text-indigo-600 dark:text-white shadow-sm dark:shadow-lg group-hover:scale-105 transition-all duration-500">
+            <Code2 size={20} strokeWidth={1.5} />
           </div>
           <div className="hidden sm:block">
-            <h1 className="text-lg font-bold text-gray-900 dark:text-white leading-none tracking-tight">CodeDrushti</h1>
-            <p className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mt-0.5">AI Review</p>
+            <h1 className="text-xl font-semibold dark:font-light text-[#1d1d1f] dark:text-white leading-none tracking-wide transition-colors duration-500">CodeDrushti</h1>
+            <p className="text-[10px] font-bold dark:font-normal text-indigo-600 dark:text-indigo-400 uppercase tracking-[0.2em] mt-1 opacity-80 transition-colors duration-500">Intelligence</p>
           </div>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-1.5">
-          {(isAuthenticated ? authMenuItems : guestMenuItems).map((item) => (
+        <nav className="hidden md:flex items-center gap-2">
+          {(isAuth ? authLinks : guestLinks).map((lnk) => (
             <Link 
-              key={item.name} to={item.path} 
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-semibold transition-all duration-200
-                ${isActive(item.path) ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-slate-800/50'}`}
+              key={lnk.name} to={lnk.path} 
+              className={`relative flex items-center gap-2.5 px-5 py-2.5 rounded-2xl text-sm font-medium dark:font-normal transition-all duration-500 overflow-hidden group
+                ${isHere(lnk.path) ? 'text-[#1d1d1f] dark:text-white' : 'text-[#555555] hover:text-[#1d1d1f] dark:text-[#86868b] dark:hover:text-white'}`}
             >
-              <item.icon size={18} className={isActive(item.path) ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-500'} />
-              <span>{item.name}</span>
+              {isHere(lnk.path) && (
+                <motion.div layoutId="navGlow" className="absolute inset-0 bg-black/5 border border-black/5 dark:bg-white/5 dark:border-white/10 rounded-2xl z-0 transition-colors duration-500" transition={{ type: "spring", bounce: 0.2, duration: 0.6 }} />
+              )}
+              <lnk.icon size={18} strokeWidth={1.5} className={`relative z-10 transition-colors duration-500 ${isHere(lnk.path) ? 'text-indigo-600 dark:text-indigo-400' : 'text-[#86868b] dark:text-[#555555] group-hover:text-indigo-600/70 dark:group-hover:text-indigo-400/70'}`} />
+              <span className="relative z-10 tracking-wide">{lnk.name}</span>
             </Link>
           ))}
         </nav>
 
-        <div className="flex items-center gap-2 md:gap-3">
+        <div className="flex items-center gap-3 md:gap-4">
           
-          {isAuthenticated && (
-            <div className="relative" ref={notifRef}>
+          {isAuth && (
+            <div className="relative" ref={alertRef}>
               <button 
-                onClick={toggleNotifications}
-                className="relative p-2 text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 rounded-xl transition-colors cursor-pointer"
+                onClick={toggleAlerts}
+                className="relative p-2.5 text-[#555555] dark:text-[#86868b] hover:text-[#1d1d1f] dark:hover:text-white bg-transparent hover:bg-black/5 dark:hover:bg-white/5 border border-transparent hover:border-black/5 dark:hover:border-white/10 rounded-2xl transition-all duration-500 cursor-pointer group"
               >
-                <Bell size={20} className={flashState ? "animate-bounce text-indigo-600 dark:text-indigo-400" : ""} />
-                {unreadCount > 0 && (
-                  <span className="absolute top-1 right-1.5 w-2.5 h-2.5 bg-rose-500 border-2 border-white dark:border-slate-900 rounded-full"></span>
+                <Bell size={20} strokeWidth={1.5} className={glow ? "text-indigo-600 dark:text-indigo-400 animate-pulse" : "group-hover:scale-110 transition-transform duration-500"} />
+                {unread > 0 && (
+                  <span className="absolute top-2 right-2.5 w-2 h-2 bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.4)] dark:shadow-[0_0_10px_rgba(244,63,94,0.8)] rounded-full"></span>
                 )}
               </button>
 
-              {/* NOTIFICATION DROPDOWN */}
-              {isNotifOpen && (
-                <div className="absolute right-0 mt-3 w-80 md:w-96 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden animate-in slide-in-from-top-2 fade-in duration-200 z-50">
-                  <div className="p-4 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-gray-50 dark:bg-slate-800/50">
-                    <h3 className="font-bold text-gray-900 dark:text-white">Notifications</h3>
-                    {notifications.length > 0 && (
-                      <button onClick={markAllAsRead} className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 cursor-pointer">
-                        <CheckCheck size={14} /> Mark all read
-                      </button>
-                    )}
-                  </div>
-                  
-                  <div className="max-h-[400px] overflow-y-auto no-scrollbar">
-                    {notifications.length === 0 ? (
-                      <div className="p-8 text-center text-gray-500 dark:text-gray-400">
-                        <Bell size={24} className="mx-auto mb-2 opacity-50" />
-                        <p className="text-sm font-medium">No notifications yet</p>
-                      </div>
-                    ) : (
-                      <div className="divide-y divide-gray-50 dark:divide-slate-800/50">
-                        {notifications.map(notif => (
-                          <div key={notif.id} onClick={() => navigate('/reviews')} className={`p-4 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer flex gap-4 items-start ${!notif.read ? 'bg-indigo-50/30 dark:bg-indigo-500/5' : ''}`}>
-                            <div className="shrink-0 mt-0.5">
-                              {notif.type === 'danger' && <ShieldAlert size={20} className="text-rose-500" />}
-                              {notif.type === 'warning' && <AlertTriangle size={20} className="text-amber-500" />}
-                              {notif.type === 'success' && <CheckCircle size={20} className="text-emerald-500" />}
+              <AnimatePresence>
+                {alertsOn && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 15, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                    className="absolute right-0 mt-4 w-80 md:w-96 bg-white/95 dark:bg-[#0a0a0a]/95 backdrop-blur-3xl border border-black/5 dark:border-white/10 rounded-[32px] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)] dark:shadow-[0_40px_100px_-20px_rgba(0,0,0,0.8)] overflow-hidden z-50 transition-colors duration-500"
+                  >
+                    <div className="p-5 border-b border-black/5 dark:border-white/5 flex justify-between items-center bg-black/5 dark:bg-white/5 transition-colors duration-500">
+                      <h3 className="font-semibold dark:font-normal text-[#1d1d1f] dark:text-white tracking-wide">Notifications</h3>
+                      {alerts.length > 0 && (
+                        <button onClick={markRead} className="text-xs font-medium dark:font-light tracking-wide text-[#555555] dark:text-[#86868b] hover:text-[#1d1d1f] dark:hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer">
+                          <CheckCheck size={14} strokeWidth={1.5} /> Mark read
+                        </button>
+                      )}
+                    </div>
+                    
+                    <div className="max-h-[400px] overflow-y-auto no-scrollbar">
+                      {alerts.length === 0 ? (
+                        <div className="p-10 text-center text-[#86868b] dark:text-[#555555]">
+                          <Bell size={28} strokeWidth={1} className="mx-auto mb-3 opacity-50 dark:opacity-30" />
+                          <p className="text-sm font-medium dark:font-light tracking-wide">No notifications yet</p>
+                        </div>
+                      ) : (
+                        <div className="divide-y divide-black/5 dark:divide-white/5 transition-colors duration-500">
+                          {alerts.map(al => (
+                            <div key={al.id} onClick={() => nav('/reviews')} className={`p-5 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer flex gap-4 items-start ${!al.read ? 'bg-indigo-50 dark:bg-indigo-500/5' : ''}`}>
+                              <div className="shrink-0 mt-0.5">
+                                {al.type === 'danger' && <ShieldAlert size={20} strokeWidth={1.5} className="text-rose-500 dark:text-rose-400 drop-shadow-[0_0_10px_rgba(244,63,94,0.2)] dark:drop-shadow-[0_0_10px_rgba(244,63,94,0.4)]" />}
+                                {al.type === 'warning' && <AlertTriangle size={20} strokeWidth={1.5} className="text-amber-500 dark:text-amber-400 drop-shadow-[0_0_10px_rgba(245,158,11,0.2)] dark:drop-shadow-[0_0_10px_rgba(245,158,11,0.4)]" />}
+                                {al.type === 'success' && <CheckCircle size={20} strokeWidth={1.5} className="text-emerald-500 dark:text-emerald-400 drop-shadow-[0_0_10px_rgba(16,185,129,0.2)] dark:drop-shadow-[0_0_10px_rgba(16,185,129,0.4)]" />}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-semibold dark:font-normal text-[#1d1d1f] dark:text-white tracking-wide truncate">{al.title}</p>
+                                <p className="text-xs text-[#555555] dark:text-[#86868b] font-medium dark:font-light mt-1.5 line-clamp-2 leading-relaxed">{al.message}</p>
+                                <p className="text-[10px] text-[#86868b] dark:text-[#555555] mt-3 font-semibold dark:font-light tracking-widest uppercase">{fmtTime(al.time)}</p>
+                              </div>
+                              {!al.read && <div className="w-1.5 h-1.5 bg-indigo-600 dark:bg-indigo-500 rounded-full shrink-0 mt-1.5"></div>}
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{notif.title}</p>
-                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2 leading-relaxed">{notif.message}</p>
-                              <p className="text-[10px] text-gray-400 mt-2 font-medium">{formatTime(notif.time)}</p>
-                            </div>
-                            {!notif.read && <div className="w-2 h-2 bg-indigo-500 rounded-full shrink-0 mt-1.5"></div>}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           )}
 
           <ThemeToggle />
 
-          <div className="hidden md:flex items-center gap-2 border-l border-gray-200 dark:border-slate-800 pl-3">
-            {isAuthenticated ? (
+          <div className="hidden md:flex items-center gap-2 pl-4 border-l border-black/10 dark:border-white/10 transition-colors duration-500">
+            {isAuth ? (
               <>
-                <Link to="/profile" className="p-2 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-xl transition-all">
-                  <User size={20} />
+                <Link to="/profile" className="p-2.5 text-[#555555] dark:text-[#86868b] hover:text-[#1d1d1f] dark:hover:text-white bg-transparent hover:bg-black/5 dark:hover:bg-white/5 border border-transparent hover:border-black/5 dark:hover:border-white/10 rounded-2xl transition-all duration-500">
+                  <User size={20} strokeWidth={1.5} />
                 </Link>
-                <button onClick={handleLogout} className="p-2 text-gray-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-all cursor-pointer">
-                  <LogOut size={20} />
+                <button onClick={doLogOut} className="p-2.5 text-[#555555] dark:text-[#86868b] hover:text-rose-600 dark:hover:text-rose-400 bg-transparent hover:bg-rose-50 dark:hover:bg-rose-500/10 border border-transparent hover:border-rose-200 dark:hover:border-rose-500/20 rounded-2xl transition-all duration-500 cursor-pointer">
+                  <LogOut size={20} strokeWidth={1.5} />
                 </button>
               </>
             ) : (
-              <div className="flex items-center gap-2">
-                <Link to="/login" className="text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-3 py-2 transition-colors">Sign In</Link>
-                <Link to="/register" className="text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 text-white px-4 py-2 rounded-xl shadow-sm transition-all">Register</Link>
+              <div className="flex items-center gap-3">
+                <Link to="/login" className="text-sm font-medium dark:font-normal text-[#555555] dark:text-[#86868b] hover:text-[#1d1d1f] dark:hover:text-white px-4 py-2.5 transition-colors duration-500 tracking-wide">Sign In</Link>
+                <Link to="/register" className="text-sm font-medium dark:font-normal bg-[#1d1d1f] dark:bg-white text-white dark:text-black px-6 py-2.5 rounded-full hover:scale-105 transition-all duration-500 tracking-wide shadow-[0_0_20px_-5px_rgba(0,0,0,0.2)] dark:shadow-[0_0_20px_-5px_rgba(255,255,255,0.3)]">Register</Link>
               </div>
             )}
           </div>
 
-          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="md:hidden p-2 text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-xl transition-colors cursor-pointer">
-            {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          <button onClick={() => setMobMenu(!mobMenu)} className="md:hidden p-2.5 text-[#1d1d1f] dark:text-white bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl transition-colors cursor-pointer">
+            {mobMenu ? <X size={20} strokeWidth={1.5} /> : <Menu size={20} strokeWidth={1.5} />}
           </button>
         </div>
       </div>
 
-      {isMobileMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden p-3 animate-in slide-in-from-top-2 fade-in duration-200">
-          <nav className="flex flex-col gap-1 mb-2">
-            {(isAuthenticated ? authMenuItems : guestMenuItems).map((item) => (
-              <Link key={item.name} to={item.path} className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${isActive(item.path) ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800'}`}>
-                <item.icon size={18} className={isActive(item.path) ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-500'} />{item.name}
-              </Link>
-            ))}
-          </nav>
-          <div className="border-t border-gray-100 dark:border-slate-800 pt-2 flex flex-col gap-1">
-            {isAuthenticated ? (
-              <>
-                <Link to="/profile" className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 transition-all"><User size={18} />Profile</Link>
-                <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all cursor-pointer"><LogOut size={18} />Logout</button>
-              </>
-            ) : (
-              <>
-                <Link to="/login" className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 transition-all"><LogIn size={18} />Sign In</Link>
-                <Link to="/register" className="flex items-center justify-center gap-2 mt-1 px-4 py-3 rounded-xl text-sm font-semibold bg-indigo-600 dark:bg-indigo-500 text-white shadow-sm transition-all">Create Account</Link>
-              </>
-            )}
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {mobMenu && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className="md:hidden pointer-events-auto absolute top-24 left-4 right-4 bg-white/95 dark:bg-[#0a0a0a]/95 backdrop-blur-3xl border border-black/5 dark:border-white/10 rounded-[32px] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)] dark:shadow-[0_40px_100px_-20px_rgba(0,0,0,0.8)] overflow-hidden p-4 transition-colors duration-500"
+          >
+            <nav className="flex flex-col gap-2 mb-4">
+              {(isAuth ? authLinks : guestLinks).map((lnk) => (
+                <Link key={lnk.name} to={lnk.path} className={`flex items-center gap-3.5 px-5 py-4 rounded-2xl text-sm font-medium dark:font-normal tracking-wide transition-all ${isHere(lnk.path) ? 'bg-black/5 dark:bg-white/10 text-[#1d1d1f] dark:text-white border border-black/5 dark:border-white/5' : 'text-[#555555] dark:text-[#86868b] hover:bg-black/5 dark:hover:bg-white/5 hover:text-[#1d1d1f] dark:hover:text-white'}`}>
+                  <lnk.icon size={20} strokeWidth={1.5} className={isHere(lnk.path) ? 'text-indigo-600 dark:text-indigo-400' : 'text-[#86868b] dark:text-[#555555]'} />{lnk.name}
+                </Link>
+              ))}
+            </nav>
+            <div className="border-t border-black/5 dark:border-white/10 pt-4 flex flex-col gap-2 transition-colors duration-500">
+              {isAuth ? (
+                <>
+                  <Link to="/profile" className="flex items-center gap-3.5 px-5 py-4 rounded-2xl text-sm font-medium dark:font-normal tracking-wide text-[#555555] dark:text-[#86868b] hover:bg-black/5 dark:hover:bg-white/5 hover:text-[#1d1d1f] dark:hover:text-white transition-all"><User size={20} strokeWidth={1.5} />Profile</Link>
+                  <button onClick={doLogOut} className="w-full flex items-center gap-3.5 px-5 py-4 rounded-2xl text-sm font-medium dark:font-normal tracking-wide text-rose-600 dark:text-rose-400/80 hover:text-rose-700 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all cursor-pointer"><LogOut size={20} strokeWidth={1.5} />Logout</button>
+                </>
+              ) : (
+                <>
+                  <Link to="/login" className="flex items-center gap-3.5 px-5 py-4 rounded-2xl text-sm font-medium dark:font-normal tracking-wide text-[#555555] dark:text-[#86868b] hover:bg-black/5 dark:hover:bg-white/5 hover:text-[#1d1d1f] dark:hover:text-white transition-all"><LogIn size={20} strokeWidth={1.5} />Sign In</Link>
+                  <Link to="/register" className="flex items-center justify-center gap-2 mt-2 px-5 py-4 rounded-full text-sm font-medium dark:font-normal tracking-wide bg-[#1d1d1f] dark:bg-white text-white dark:text-black shadow-lg transition-all">Create Account</Link>
+                </>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
 
-export default Sidebar;
+export default Navbar;

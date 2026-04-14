@@ -1,48 +1,71 @@
 import React from 'react';
-import { projectInfo, docSections } from '../utils/data'; 
+import { BookOpen, Clock, User, ChevronRight } from 'lucide-react';
+import { projectInfo, docSections } from '../utils/data';
 
 const Documentation = () => {
+  // Reduces the output to only show the first 2 sections
+  const conciseDocs = docSections.slice(0, 2);
+
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-gray-600 dark:text-gray-300 p-6 md:p-12 transition-colors duration-300">
-      <div className="max-w-6xl mx-auto bg-white dark:bg-slate-900 rounded-3xl p-8 md:p-12 border border-gray-100 dark:border-slate-800 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none transition-colors duration-300">
+    <div className="min-h-screen bg-[#fcfcfc] dark:bg-[#050505] text-[#1d1d1f] dark:text-[#f5f5f7] font-sans selection:bg-black/10 dark:selection:bg-white/10 overflow-x-hidden transition-colors duration-500">
+      <div className="max-w-4xl mx-auto px-6 py-24 md:py-32">
         
-        <header className="mb-12 border-b border-gray-100 dark:border-slate-800 pb-8 transition-colors duration-300">
-          <div className="inline-flex items-center px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 text-xs font-bold tracking-wider uppercase mb-4">
+        {/* Header Area */}
+        <header className="mb-20 border-b border-black/5 dark:border-white/5 pb-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/5 dark:bg-white/5 text-[#1d1d1f] dark:text-[#e5e5e5] text-[11px] tracking-widest uppercase font-light mb-8">
+            <BookOpen size={12} strokeWidth={1.5} />
             Documentation
           </div>
-          <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white mb-4 tracking-tight transition-colors duration-300">{projectInfo.title}</h1>
-          <div className="flex flex-wrap gap-4 text-sm font-medium text-gray-500 dark:text-gray-400">
-            <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>v{projectInfo.version}</span>
-            <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600"></span>Updated: {projectInfo.lastUpdated}</span>
-            <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600"></span>Author: {projectInfo.author}</span>
+          
+          <h1 className="text-4xl md:text-5xl font-light tracking-tight mb-8 text-[#1d1d1f] dark:text-white">
+            {projectInfo.title}
+          </h1>
+          
+          <div className="flex flex-wrap items-center gap-5 text-[#86868b] font-light text-sm tracking-wide">
+            <span className="flex items-center gap-2">
+              Version {projectInfo.version}
+            </span>
+            <span className="hidden md:block w-1 h-1 rounded-full bg-black/10 dark:bg-white/10" />
+            <span className="flex items-center gap-2">
+              <Clock size={14} strokeWidth={1.5} />
+              {projectInfo.lastUpdated}
+            </span>
+            <span className="hidden md:block w-1 h-1 rounded-full bg-black/10 dark:bg-white/10" />
+            <span className="flex items-center gap-2">
+              <User size={14} strokeWidth={1.5} />
+              {projectInfo.author}
+            </span>
           </div>
         </header>
 
-        <div className="space-y-16">
-          {docSections.map((section) => (
-            <section key={section.id} id={section.id} className="scroll-mt-20">
+        {/* Content Area */}
+        <div className="space-y-24">
+          {conciseDocs.map((section) => (
+            <section key={section.id} id={section.id}>
               
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-3 transition-colors duration-300">
+              <h2 className="text-2xl font-normal text-[#1d1d1f] dark:text-white mb-5 tracking-wide">
                 {section.title}
               </h2>
               
-              <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-8 text-lg transition-colors duration-300">
+              <p className="text-lg text-[#555555] dark:text-[#a1a1a6] font-light leading-relaxed mb-12 max-w-3xl">
                 {section.content}
               </p>
 
               {section.subsections && (
-                <div className="grid gap-6 md:grid-cols-2">
+                <div className="space-y-12 pl-2 md:pl-6 border-l border-black/5 dark:border-white/5">
                   {section.subsections.map((sub, index) => (
-                    <div key={index} className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-2xl border border-gray-100 dark:border-slate-700 hover:border-indigo-100 dark:hover:border-indigo-500/30 hover:shadow-sm transition-all duration-300">
-                      <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 transition-colors duration-300">
+                    <div key={index}>
+                      <h3 className="text-lg font-normal text-[#1d1d1f] dark:text-[#e5e5e5] mb-5 tracking-wide">
                         {sub.subtitle}
                       </h3>
-                      <ul className="space-y-3">
+                      
+                      <ul className="space-y-4">
                         {sub.items.map((item, i) => (
-                          <li key={i} className="flex items-start gap-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed transition-colors duration-300">
-                            <span className="text-indigo-500 mt-1 font-bold text-lg leading-none">•</span>
+                          <li key={i} className="flex items-start gap-3 text-[15px] text-[#555555] dark:text-[#a1a1a6] font-light leading-relaxed">
+                            <ChevronRight size={16} className="text-black/30 dark:text-white/30 mt-1 flex-shrink-0" strokeWidth={1} />
                             <span dangerouslySetInnerHTML={{ 
-                              __html: item.replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-gray-900 dark:text-white">$1</strong>') 
+                              // Replaces markdown bold (**) with a font-normal span to adhere to no-bold rules
+                              __html: item.replace(/\*\*(.*?)\*\*/g, '<span class="font-normal text-[#1d1d1f] dark:text-[#e5e5e5]">$1</span>') 
                             }} />
                           </li>
                         ))}
@@ -55,11 +78,14 @@ const Documentation = () => {
           ))}
         </div>
 
-        <footer className="mt-20 pt-8 border-t border-gray-100 dark:border-slate-800 text-center text-sm font-medium text-gray-400 dark:text-gray-500 transition-colors duration-300">
+        {/* Footer Area */}
+        <footer className="mt-32 pt-8 border-t border-black/5 dark:border-white/5 text-[#86868b] font-light text-sm tracking-wide">
           <p>© {new Date().getFullYear()} CodeDrushti. All rights reserved.</p>
         </footer>
+        
       </div>
     </div>
   );
 };
+
 export default Documentation;
