@@ -44,6 +44,7 @@ const NewReview = () => {
     let data;
 
     try {
+      // Use your local backend for testing since Render still has the old buggy code
       const response = await fetch("https://codedrushti.onrender.com/ai/get-review", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -80,7 +81,7 @@ const NewReview = () => {
                 onChange={(e) => setCode(e.target.value)}
                 placeholder="// Initialize scan sequence..."
                 spellCheck="false"
-                className={`w-full bg-slate-950 text-gray-300 p-6 pr-14 rounded-xl focus:outline-none font-mono text-sm resize-none leading-relaxed selection:bg-indigo-500/30 overflow-y-auto transition-all duration-300 ${isExpanded ? 'h-[65vh]' : 'h-[320px]'} no-scrollbar`}
+                className={`w-full bg-slate-950 text-gray-300 p-6 pr-14 rounded-xl focus:outline-none font-mono text-sm resize-none leading-relaxed selection:bg-indigo-500/30 overflow-y-auto transition-all duration-300 ${isExpanded ? 'h-[65vh]' : 'h-80'} no-scrollbar`}
               />
               {(hasOverflow || isExpanded) && (
                 <button
