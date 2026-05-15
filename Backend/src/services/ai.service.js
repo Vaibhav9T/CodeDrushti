@@ -2,42 +2,60 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 async function generateContent(code) {
     const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) throw new Error("API_KEY_MISSING");
+    
+    if (!apiKey) {
+        console.error("CRITICAL: GEMINI_API_KEY is not defined in environment variables.");
+        throw new Error("API_KEY_MISSING");
+    }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    
+    // FORCE Gemini to output strict, machine-readable JSON
+    const model = genAI.getGenerativeModel({ 
+        model: "gemini-2.5-pro",
+        generationConfig: {
+            responseMimeType: "application/json",
+        }
+    });
 
     const prompt = `
-    Analyze this code and return ONLY a valid JSON object. Do not include markdown formatting or explanation outside the JSON.
-    Format:
+    Analyze this code and return ONLY a valid JSON object matching this exact schema. Do not add markdown.
     {
       "bugs": [{"title": "", "severity": "Critical|High|Medium|Low", "description": "", "line": "", "suggestion": ""}],
       "improvements": [{"title": "", "severity": "Info", "description": "", "line": "", "suggestion": ""}],
       "security": [{"title": "", "severity": "Critical|High", "description": "", "line": "", "suggestion": ""}]
     }
-    Code:
+    Code to analyze:
     ${code}
     `;
 
     try {
         const result = await model.generateContent(prompt);
-        const text = await result.response.text();
+        let text = result.response.text();
+        
+        // Remove markdown formatting if present
+        text = text.replace(/```json/g, '').replace(/```/g, '').trim();
 
-        const jsonStart = text.indexOf('{');
-        const jsonEnd = text.lastIndexOf('}');
+        // Because we used responseMimeType, 'text' is guaranteed to be clean JSON
+        const parsedData = JSON.parse(text);
+        
+        // Return the actual object (Express will automatically format it as JSON)
+        return parsedData; 
 
-        if (jsonStart === -1 || jsonEnd === -1) throw new Error("INVALID_AI_RESPONSE");
-
-        const cleanJson = text.substring(jsonStart, jsonEnd + 1);
-        JSON.parse(cleanJson);
-        return cleanJson;
     } catch (error) {
-        console.error(error);
-        return JSON.stringify({
-            bugs: [{ title: "Analysis Failed", severity: "High", description: "The AI engine failed to process the request.", suggestion: "Check syntax and retry." }],
+        console.error("AI Generation Failed:", error.message || error);
+        
+        // Return an object instead of a stringified string for consistency
+        return {
+            bugs: [{ 
+                title: "Analysis Failed", 
+                severity: "High", 
+                description: "The AI engine failed to process the request.", 
+                suggestion: `Backend Error: ${error.message || "Parsing or API failure"}` 
+            }],
             improvements: [],
             security: []
-        });
+        };
     }
 }
 
