@@ -19,10 +19,12 @@ CodeDrushti is a MERN‑stack web application that helps developers review code 
 ## Screenshots
 
 ### Landing Page
-![CodeDrushti LandingPage](image-1.png)
+<img width="2888" height="1808" alt="image" src="https://github.com/user-attachments/assets/5241c24a-c83b-4a09-a5f5-19cb593b29fd" />
 
-### Dashboard - Code Review
-![CodeDrushti Dashboard](image.png)
+
+### Dashboard 
+<img width="2888" height="1808" alt="image" src="https://github.com/user-attachments/assets/4b35cf7e-e150-4211-9029-51815fa580a7" />
+
 
 ## Tech Stack
 
