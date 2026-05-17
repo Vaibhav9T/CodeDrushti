@@ -12,7 +12,7 @@ async function generateContent(code) {
     
     // FORCE Gemini to output strict, machine-readable JSON
     const model = genAI.getGenerativeModel({ 
-        model: "gemini-2.5-pro",
+        model: "gemini-2.5-flash",
         generationConfig: {
             responseMimeType: "application/json",
         }
